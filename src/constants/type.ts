@@ -25,6 +25,12 @@ export interface UpdateInfo {
   address: string
 }
 
+export interface RatingType {
+  star: number
+  comment: string
+  postedBy: string
+}
+
 
 
 // CLASS

@@ -1,4 +1,7 @@
 import { checkSchema } from "express-validator";
+import { ObjectId } from "mongodb";
+import { ErrroWithStatus } from "~/constants/type";
+import databaseServices from "~/services/database.services";
 
 
 export const ProductsValidator = checkSchema({
@@ -14,7 +17,7 @@ export const ProductsValidator = checkSchema({
     },
   },
   slug: {
-    notEmpty: true,
+    optional: true,
     trim: true,
     isLength: {
       options: {
@@ -61,7 +64,7 @@ export const ProductsValidator = checkSchema({
 export const UpdateProductValidator = checkSchema({
   title: {
     trim: true,
-    optional:true,
+    optional: true,
     isLength: {
       options: {
         min: 2,
@@ -72,7 +75,7 @@ export const UpdateProductValidator = checkSchema({
   },
   slug: {
     trim: true,
-    optional:true,
+    optional: true,
     isLength: {
       options: {
         min: 2,
@@ -83,7 +86,7 @@ export const UpdateProductValidator = checkSchema({
   },
   description: {
     trim: true,
-    optional:true,
+    optional: true,
     isLength: {
       options: {
         min: 2,
@@ -94,11 +97,11 @@ export const UpdateProductValidator = checkSchema({
   },
   price: {
     isNumeric: true,
-    optional:true,
+    optional: true,
     errorMessage: "Price must be a number"
   },
   category: {
-    optional:true,
+    optional: true,
     isLength: {
       options: {
         min: 2,
@@ -108,11 +111,54 @@ export const UpdateProductValidator = checkSchema({
     },
   },
   brand: {
-    optional:true,
+    optional: true,
     isIn: { options: [["Apple", "Samsung", "Lenovo", "Xiaomi", "No brand"]], errorMessage: "Brand is invalid!" }
   },
   quantity: {
-    optional:true,
+    optional: true,
     isNumeric: true,
   },
+}, ["body"])
+
+export const WishListValidator = checkSchema({
+  product_id: {
+    notEmpty: true,
+    trim: true,
+    custom: {
+      options: async (value) => {
+        const isProc = await databaseServices.products.findOne({ _id: new ObjectId(value) })
+        if (!isProc) throw new ErrroWithStatus({ message: "Product is not exist", status: 404 })
+      }
+    }
+  },
+}, ["body"])
+
+export const RatingValidator = checkSchema({
+  product_id: {
+    notEmpty: true,
+    trim: true,
+    custom: {
+      options: async (value) => {
+        const isProc = await databaseServices.products.findOne({ _id: new ObjectId(value) })
+        if (!isProc) throw new ErrroWithStatus({ message: "Product is not exist", status: 404 })
+      }
+    }
+  },
+  star: {
+    notEmpty: true,
+    isNumeric: true,
+    errorMessage: "Star must be a number",
+    isIn: { options: [[1, 2, 3, 4, 5]], errorMessage: "Star is invalid!" }
+  },
+  comment: {
+    optional: true,
+    trim: true,
+    isLength: {
+      options: {
+        min: 2,
+        max: 500,
+      },
+      errorMessage: "Comment must be at least 2 characters long and less than 500 characters long."
+    },
+  }
 }, ["body"])

@@ -16,9 +16,9 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
     const simplifiedErrors = [];
     for (const key in arrayError) {
       simplifiedErrors.push({
-        message: arrayError[key].msg,
+        message: arrayError[key].msg.message || arrayError[key].msg,
         path: arrayError[key].path,
-        status: 400
+        status: arrayError[key].msg.status || 400
       });
     }
     res.status(400).json(simplifiedErrors);

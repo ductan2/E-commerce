@@ -2,6 +2,10 @@ import { Collection, Db, MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import { UserType } from "~/models/users.models";
 import { ProductType } from "~/models/products.models";
+import { BlogType } from "~/models/blogs.models";
+import ProcCategorys from "~/models/procCategorys.models";
+import BlogCategorys from "~/models/blogCategorys.models";
+import { BrandType } from "~/models/brand.models";
 dotenv.config();
 
 const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.hdfborf.mongodb.net/`;
@@ -29,6 +33,18 @@ class DatabaseServices {
   }
   get products(): Collection<ProductType> {
     return this.db.collection("products")
+  }
+  get blogs(): Collection<BlogType> {
+    return this.db.collection("blogs")
+  }
+  get productCategorys(): Collection<ProcCategorys> {
+    return this.db.collection("productCategorys")
+  }
+  get blogCategorys(): Collection<BlogCategorys> {
+    return this.db.collection("blogCategorys")
+  }
+  get brands(): Collection<BrandType> {
+    return this.db.collection("brands")
   }
 }
 

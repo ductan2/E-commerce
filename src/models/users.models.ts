@@ -14,7 +14,7 @@ export interface UserType {
   role?: Role
   blocked?: boolean
   cart?: any[]
-  wishlist?: any[]
+  wishlist?: string[] // href of product
   address?: string
   refresh_token?: string
   password_reset_token?: string
@@ -33,6 +33,7 @@ export default class User {
   password: string;
   role: Role;
   blocked?: boolean
+  wishlist?: string[]
   address?: string
   refresh_token?: string
   password_reset_token?: string
@@ -53,6 +54,7 @@ export default class User {
     this.blocked = user.blocked || false
     this.refresh_token = user.refresh_token || ""
     this.password_reset_token = user.password_reset_token || ""
+    this.wishlist = user.wishlist || []
     this.password_reset_expires = user.password_reset_expires || undefined
     this.created_at = user.created_at || date
     this.updated_at = user.updated_at || date

@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb"
 import { BrandType } from "~/constants/enum"
+import { RatingType } from "~/constants/type"
 
 
 
@@ -15,7 +16,8 @@ export interface ProductType {
   sold?: number
   images?: string[]
   color?: string[]
-  ratings?: any[]
+  ratings?: RatingType[]
+  rating_distribution?: number
   craeted_at?: Date
   updated_at?: Date
 }
@@ -31,7 +33,8 @@ export default class Products {
   sold?: number
   images?: string[]
   color?: string[]
-  ratings?: any[]
+  ratings?: RatingType[]
+  rating_distribution?: number
   craeted_at?: Date
   updated_at?: Date
   constructor(product: ProductType) {
@@ -47,6 +50,7 @@ export default class Products {
     this.images = product.images || []
     this.sold = product.sold || 0
     this.color = product.color || []
+    this.rating_distribution = product.rating_distribution || 5
     this.ratings = product.ratings || []
     this.craeted_at = product.craeted_at || date
     this.updated_at = product.updated_at || date
