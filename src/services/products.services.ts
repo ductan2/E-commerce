@@ -3,6 +3,14 @@ import databaseServices from "./database.services";
 import { ObjectId } from "mongodb";
 import slug from "slug"
 import User from "~/models/users.models";
+import { getFileName, handleuploadImage } from "~/utils/file";
+import fs from "fs";
+import path from 'path';
+import sharp from 'sharp';
+import { File } from 'formidable';
+import { UPLOAD_IMAGE_DIR } from "~/constants/dir";
+import { Request } from "express";
+import { cloudinaryUploadImage } from "~/utils/cloudinary";
 class ProductServices {
   async createProduct(payload: ProductType) {
     const _id = new ObjectId();
@@ -92,7 +100,7 @@ class ProductServices {
           }
         }
       }, { returnDocument: "after" })
-     
+
     }
     // caculator rating
     const productAllRating = await databaseServices.products.findOne({ _id: new ObjectId(product_id) })
@@ -103,6 +111,25 @@ class ProductServices {
         rating_distribution: Math.round(Number(sumRating) / Number(lengthRatingProc))
       }
     })
+  }
+  async uploadImage(req: Request) {
+    const files = await handleuploadImage(req) as any;
+    const urls: any[] = []
+     await Promise.all(files.map(async (file: File) => {
+      const fileName = getFileName(file)
+      const newPath = path.resolve(UPLOAD_IMAGE_DIR, `${fileName}`)
+      await sharp(file.filepath).jpeg().toFile(newPath)
+      fs.unlink(file.filepath, (err) => {
+        console.log(err)
+      })
+      urls.push(await cloudinaryUploadImage(newPath))
+    }))
+    console.log("🚀 ~ file: products.services.ts:126 ~ ProductServices ~ result ~ urls:", urls)
+    return await databaseServices.products.findOneAndUpdate({ _id: new ObjectId(req.params.id) }, {
+      $push: {
+        images: { $each: urls }
+      }
+    }, { returnDocument: "after" })
   }
 }
 

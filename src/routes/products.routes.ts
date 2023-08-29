@@ -1,5 +1,5 @@
 import express from "express"
-import { addToWishListController, createProductController, deleteProductController, getAllProductController, getProductController, ratingController, updateProductController } from "~/controllers/products.controller";
+import { addToWishListController, createProductController, deleteProductController, getAllProductController, getProductController, ratingController, updateProductController, uploadImageController } from "~/controllers/products.controller";
 import { authMiddlewares } from "~/middlewares/auth.middlewares";
 import { filterMiddleware } from "~/middlewares/filter.middlewares";
 import { ProductsValidator, RatingValidator, UpdateProductValidator, WishListValidator } from "~/middlewares/products.middlewares";
@@ -8,9 +8,12 @@ import { validate } from "~/utils/validate";
 const router = express.Router();
 
 
+router.put('/upload/:id', uploadImageController)
+
 router.post('/', validate(ProductsValidator), createProductController)
 
 router.get("/get-all-products", getAllProductController)
+
 
 router.get('/:id', getProductController)
 
@@ -20,7 +23,8 @@ router.delete('/:id', deleteProductController)
 
 router.put('/add-to-wishlist', authMiddlewares, validate(WishListValidator), addToWishListController)
 
-router.put('/rating',authMiddlewares,validate(RatingValidator),ratingController)
+router.put('/rating', authMiddlewares, validate(RatingValidator), ratingController)
+
 
 
 export default router

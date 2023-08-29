@@ -30,9 +30,9 @@ export interface RatingType {
   comment: string
   postedBy: string
 }
-
-
-
+export interface imageUrl {
+  url: string
+}
 // CLASS
 export class ErrroWithStatus {
   message: string

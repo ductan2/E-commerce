@@ -6,6 +6,7 @@ import { BlogType } from "~/models/blogs.models";
 import ProcCategorys from "~/models/procCategorys.models";
 import BlogCategorys from "~/models/blogCategorys.models";
 import { BrandType } from "~/models/brand.models";
+import { CouponType } from "~/models/coupons.models";
 dotenv.config();
 
 const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.hdfborf.mongodb.net/`;
@@ -45,6 +46,9 @@ class DatabaseServices {
   }
   get brands(): Collection<BrandType> {
     return this.db.collection("brands")
+  }
+  get coupons(): Collection<CouponType> {
+    return this.db.collection("coupons")
   }
 }
 

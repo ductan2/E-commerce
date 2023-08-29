@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb"
 import { BrandType } from "~/constants/enum"
-import { RatingType } from "~/constants/type"
+import { RatingType, imageUrl } from "~/constants/type"
 
 
 
@@ -14,7 +14,7 @@ export interface ProductType {
   category?: any[] // category 
   quantity?: number
   sold?: number
-  images?: string[]
+  images?: any[]
   color?: string[]
   ratings?: RatingType[]
   rating_distribution?: number
@@ -31,7 +31,7 @@ export default class Products {
   category?: any[] // category 
   quantity?: number
   sold?: number
-  images?: string[]
+  images?: any[]
   color?: string[]
   ratings?: RatingType[]
   rating_distribution?: number

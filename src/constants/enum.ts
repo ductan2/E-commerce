@@ -13,3 +13,4 @@ export enum BrandType {
   XIAOMI = "Xiaomi",
   NO_BRAND = "No brand",
 }
+

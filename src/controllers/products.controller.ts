@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ErrorStatus } from "~/constants/enum";
-import { RatingType } from "~/constants/type";
 import { productServices } from "~/services/products.services";
+import { initFolder } from "~/utils/file";
 
 export const createProductController = async (req: Request, res: Response) => {
   try {
@@ -61,10 +61,19 @@ export const ratingController = async (req: Request, res: Response) => {
   try {
     const { _id: user_id } = req.user
     const { product_id, star, comment } = req.body
-    const { value } = await productServices.rating(product_id, user_id, star,comment);
-    
+    const { value } = await productServices.rating(product_id, user_id, star, comment);
+
     return res.status(200).json({ message: "Rating successfully", status: 200, result: value })
   } catch (error) {
     return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Rating failed", status: ErrorStatus.INTERNAL_SERVER })
+  }
+}
+export const uploadImageController = async (req: Request, res: Response) => {
+  initFolder();
+  try {
+    const { value } = await productServices.uploadImage(req)
+    return res.status(200).json({ message: "Upload image successfully", status: 200, result: value })
+  } catch (error) {
+    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Upload image failed", status: ErrorStatus.INTERNAL_SERVER })
   }
 }
