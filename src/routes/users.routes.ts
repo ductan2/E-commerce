@@ -2,12 +2,12 @@ import express from "express"
 import { UpdateInfo } from "~/constants/type";
 import {
   applyCouponController,
-  blockUserController, deleteUserController, forgotPasswordTokenController, getAllUserController, getEmptyCartController, getUserCartController, getUserController, getWhishListController, loginAdminController, loginController, logoutController,
-  refreshTokenController, registerController, resetPasswordController, unBlockUserController, updatePasswordController, updateUserController, userCartController
+  blockUserController, createOrderController, deleteUserController, forgotPasswordTokenController, getAllUserController, getEmptyCartController, getOrderController, getUserCartController, getUserController, getWhishListController, loginAdminController, loginController, logoutController,
+  refreshTokenController, registerController, resetPasswordController, unBlockUserController, updateOrderStatusController, updatePasswordController, updateUserController, userCartController
 } from "~/controllers/users.controller";
 import { authMiddlewares, isAdmin } from "~/middlewares/auth.middlewares";
 import { filterMiddleware } from "~/middlewares/filter.middlewares";
-import { ForgotPasswordValidator, LoginValidator, RegisterValidator, UpdatePasswordValidator, UpdateValidator } from "~/middlewares/users.middlewares";
+import { ForgotPasswordValidator, LoginValidator, RegisterValidator, StatusOrderValidator, UpdatePasswordValidator, UpdateValidator } from "~/middlewares/users.middlewares";
 import { validate } from "~/utils/validate";
 
 const router = express.Router();
@@ -38,9 +38,15 @@ router.get('/whishlist', authMiddlewares, getWhishListController)
 
 router.post('/cart', authMiddlewares, userCartController)
 
-router.get('/get-cart', authMiddlewares, getUserCartController)
+router.get('/cart/get-cart', authMiddlewares, getUserCartController)
 
-router.delete("/empty-cart", authMiddlewares, getEmptyCartController)
+router.post('/order/cash-order', authMiddlewares, createOrderController)
+
+router.get('/order/get-order', authMiddlewares, getOrderController)
+
+router.put('/order/update-status-order/:id', authMiddlewares, isAdmin,validate(StatusOrderValidator), updateOrderStatusController)
+
+router.delete("/cart/empty-cart", authMiddlewares, getEmptyCartController)
 
 router.delete("/delete-user/:id", deleteUserController)
 
@@ -53,6 +59,7 @@ router.patch("/apply-coupon", authMiddlewares, applyCouponController)
 router.put('/block-user/:id', authMiddlewares, isAdmin, blockUserController)
 
 router.put('/unblock-user/:id', authMiddlewares, isAdmin, unBlockUserController)
+
 
 
 export default router

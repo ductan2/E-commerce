@@ -1,6 +1,8 @@
 import { ParamSchema, checkSchema } from "express-validator";
+import { statusOrder } from "~/constants/enum";
 import databaseServices from "~/services/database.services";
-
+import { EnumToArray } from "~/utils/commons";
+const statusOrdersType = EnumToArray(statusOrder)
 const passwordSchema: ParamSchema = {
   notEmpty: true,
   isLength: {
@@ -168,5 +170,17 @@ export const ForgotPasswordValidator = checkSchema({
   password: passwordSchema,
   confirmPassword: confirmPasswordSchema
 }, ["body"])
-
+export const StatusOrderValidator = checkSchema({
+  status: {
+    notEmpty: true,
+    isString: {
+      errorMessage: "Status must be string"
+    },
+    trim: true,
+    isIn: {
+      options: [statusOrdersType],
+      errorMessage: `Status must be ${statusOrdersType.join(", ")}`
+    }
+  }
+}, ["body"])
 

@@ -1,6 +1,8 @@
+import { Request, Response } from 'express';
 import nodemailer from 'nodemailer';
+import { EmailData } from '~/constants/type';
 
-export const sendEmail = async (data: any, req: any, res: any) => {
+export const sendEmail = async (data: EmailData, req: Request, res: Response) => {
   let transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
@@ -17,6 +19,6 @@ export const sendEmail = async (data: any, req: any, res: any) => {
     text: data.text,
     html: data.html
   })
-  console.log("Message sent: %s", info.messageId);  
+  console.log("Message sent: %s", info.messageId);
   console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 } 

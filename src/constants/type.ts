@@ -1,3 +1,17 @@
+export type EmailData = {
+  to: string;
+  subject: string;
+  text?: string;
+  html?: string;
+};
+export type ProductInfo = {
+  _id: string;
+  title: string;
+  price: number;
+};
+
+
+
 export interface RegisterRequestBody {
   firstname: string;
   lastname: string;
@@ -9,6 +23,7 @@ export interface LoginRequestBody {
   email: string;
   password: string;
 }
+
 export interface ErrorType {
   message: string;
   status: number;

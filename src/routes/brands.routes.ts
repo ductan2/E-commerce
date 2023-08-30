@@ -3,6 +3,7 @@ import express from "express"
 import { checkSchema } from "express-validator"
 import { createBrandController, deleteBrandController, getAllBrandController, getBrandController, updateBrandController } from "~/controllers/brands.controller"
 import databaseServices from "~/services/database.services"
+import { validate } from "~/utils/validate"
 
 const router = express.Router()
 const brandSchema = checkSchema({
@@ -18,8 +19,10 @@ const brandSchema = checkSchema({
     },
     custom: {
       options: async (value, { req }) => {
-        const isUnique = await databaseServices.blogCategorys.findOne({ title: value })
+        const isUnique = await databaseServices.brands.findOne({ title: value })
+      
         if (isUnique) {
+   
           throw new Error("Title is already in use")
         }
       }
@@ -28,9 +31,9 @@ const brandSchema = checkSchema({
 }, ["body"])
 
 
-router.post("/", brandSchema, createBrandController)
+router.post("/", validate(brandSchema), createBrandController)
 
-router.put("/:id", brandSchema, updateBrandController)
+router.put("/:id", validate(brandSchema), updateBrandController)
 
 router.delete("/:id", deleteBrandController)
 

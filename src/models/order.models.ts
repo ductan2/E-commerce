@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb"
 import { statusOrder } from "~/constants/enum"
 
 export interface orderProduct {
-  product: string[]
+  product: string
   color: string
   count: number
   price?: number

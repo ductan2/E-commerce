@@ -3,6 +3,7 @@ import express from "express"
 import { checkSchema } from "express-validator"
 import { createBlogCategoryController, deleteBlogCategoryController, getAllBlogCategoryController, getBlogCategoryController, updateBlogCategoryController } from "~/controllers/blogCategorys.controller"
 import databaseServices from "~/services/database.services"
+import { validate } from "~/utils/validate"
 
 const router = express.Router()
 const blogCategorySchema = checkSchema({
@@ -28,9 +29,9 @@ const blogCategorySchema = checkSchema({
 }, ["body"])
 
 
-router.post("/", blogCategorySchema, createBlogCategoryController)
+router.post("/", validate(blogCategorySchema), createBlogCategoryController)
 
-router.put("/:id", blogCategorySchema, updateBlogCategoryController)
+router.put("/:id", validate(blogCategorySchema), updateBlogCategoryController)
 
 router.delete("/:id", deleteBlogCategoryController)
 

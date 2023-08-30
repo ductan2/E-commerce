@@ -1,6 +1,6 @@
 import { Request, RequestHandler, Response } from "express";
 import { ErrorStatus } from "~/constants/enum";
-import { LoginRequestBody, RegisterRequestBody } from "~/constants/type";
+import { EmailData, LoginRequestBody, RegisterRequestBody } from "~/constants/type";
 import { userServices } from "~/services/users.services";
 import { sendEmail } from "./email.controller";
 import { config } from "dotenv";
@@ -44,7 +44,7 @@ export const forgotPasswordTokenController: RequestHandler = async (req, res) =>
     const { email } = req.body
     const token = await userServices.forgotPasswordToken(email)
     const resetUrl = `Hi ${email}, please click this link to reset your password: <a href="http://localhost:${process.env.PORT}/api/users/reset-password/${token}">Reset password</a>`
-    const data = {
+    const data : EmailData = {
       to: email,
       text: `Hey ${email}`,
       subject: "Reset password",
@@ -90,7 +90,6 @@ export const getUserController: RequestHandler = async (req, res) => {
 }
 export const getEmptyCartController = async (req: Request, res: Response) => {
   const { _id } = req.user
-  console.log("🚀 ~ file: users.controller.ts:93 ~ getEmptyCartController ~ _id:", _id)
   try {
     const result = await userServices.emptyCart(_id)
     return res.status(200).json({ message: "Empty cart successfully", status: 200, result })
@@ -105,8 +104,8 @@ export const applyCouponController = async (req: Request, res: Response) => {
   try {
     const result = await userServices.applyCoupon(coupon, _id)
     return res.status(200).json({ message: "Apply coupon successfully", status: 200, result })
-  } catch (error) {
-    return res.status(ErrorStatus.BAD_REQUEST).json({ error, message: "Apply coupon failed", status: ErrorStatus.BAD_REQUEST })
+  } catch (error: any) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ message: error.message || "Apply coupon failed", status: ErrorStatus.BAD_REQUEST })
   }
 }
 
@@ -212,7 +211,7 @@ export const getUserCartController = async (req: Request, res: Response) => {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Get cart failed", status: ErrorStatus.BAD_REQUEST, error })
   }
 }
-export const createOrder = async (req: Request, res: Response) => {
+export const createOrderController = async (req: Request, res: Response) => {
   const { COD, couponApplied } = req.body
   try {
     const { _id } = req.user;
@@ -220,5 +219,25 @@ export const createOrder = async (req: Request, res: Response) => {
     return res.status(200).json({ message: "Create order successfully", status: 200, result })
   } catch (error) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Create order failed", status: ErrorStatus.BAD_REQUEST, error })
+  }
+}
+export const getOrderController = async (req: Request, res: Response) => {
+  try {
+    const { _id } = req.user;
+    const result = await userServices.getOrder(_id)
+    return res.status(200).json({ message: "Get order successfully", status: 200, result })
+  } catch (error) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Get order failed", status: ErrorStatus.BAD_REQUEST, error })
+  }
+}
+export const updateOrderStatusController = async (req: Request, res: Response) => {
+  try {
+    const { id: id_order } = req.params;
+    const { status } = req.body;
+    const { _id: id_user } = req.user
+    const { value } = await userServices.updateOrderStatus(id_user, id_order, status)
+    return res.status(200).json({ message: "Update order status successfully", status: 200, result: value })
+  } catch (error) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Update order status failed", status: ErrorStatus.BAD_REQUEST, error })
   }
 }

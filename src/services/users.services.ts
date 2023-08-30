@@ -1,16 +1,16 @@
 import { ObjectId } from "mongodb";
-import { ErrroWithStatus, RegisterRequestBody } from "~/constants/type";
+import { ErrroWithStatus, ProductInfo, RegisterRequestBody } from "~/constants/type";
 import databaseServices from "./database.services";
 import { checkPassword, hassPassword } from "~/utils/bcrypt";
 import User from "~/models/users.models";
 import { generatorToken } from "~/utils/jwt";
-import { ErrorStatus } from "~/constants/enum";
+import { ErrorStatus, statusOrder } from "~/constants/enum";
 import { generatorRefreshToken } from "~/utils/jwt"
 import jwt from "jsonwebtoken"
 import crypto from "crypto"
-import { CartType, Carts, cartProduct } from "~/models/carts.models";
-import { ProductType } from "~/models/products.models";
+import { CartType, Carts } from "~/models/carts.models";
 import { Order } from "~/models/order.models";
+import uniqid from 'uniqid';
 class UserServices {
   async register(payload: RegisterRequestBody) {
     const user_id = new ObjectId();
@@ -155,8 +155,7 @@ class UserServices {
     let products = [];
     const user = await this.getUserById(user_id);
     if (!user) throw new Error("User not found!")
-    await databaseServices.carts.findOneAndDelete({ user_id })
-
+    await databaseServices.carts.findOneAndDelete({ orderby: user_id })
     for (let item of cart) {
       let object: any = {};
       object.product = item._id;
@@ -173,19 +172,16 @@ class UserServices {
     for (let item of products) {
       cartTotal += item.count * item.price
     }
-    console.log(cartTotal, products)
     await databaseServices.carts.insertOne(new Carts({
       products: products, cartTotal, orderby: user_id
     }))
     return await databaseServices.carts.findOne({ orderby: user_id })
   }
-  async getUserCart(user_id: string) {
-    const productUser = await databaseServices.carts.findOne({ orderby: user_id })
-    if (!productUser) throw new Error("Cart is empty!")
+  async getProduct(productUser: CartType) {
     const updatedProducts = [];
     for (const product of productUser.products) {
       const foundProduct = await databaseServices.products.findOne({ _id: new ObjectId(product.product) }
-        , { projection: { price: 1, title: 1, _id: 1 } });
+        , { projection: { quantity: 1, title: 1, _id: 1 } });
       if (foundProduct) {
         const updatedProduct = {
           ...product,
@@ -194,10 +190,15 @@ class UserServices {
         updatedProducts.push(updatedProduct);
       }
     }
-    console.log("🚀 ~ file: users.services.ts:188 ~ UserServices ~ getUserCart ~ updatedProducts:", updatedProducts)
-
+    return updatedProducts
+  }
+ 
+  async getUserCart(user_id: string) {
+    const productUser = await databaseServices.carts.findOne({ orderby: user_id })
+    if (!productUser) throw new Error("Cart is empty!")
+    const updatedProducts = await this.getProduct(productUser);
     return {
-      ...productUser as CartType,
+      ...productUser,
       products: updatedProducts
     }
   }
@@ -205,25 +206,54 @@ class UserServices {
     return await databaseServices.carts.deleteOne({ orderby: user_id })
   }
   async applyCoupon(coupon: string, user_id: string) {
+
     const couponItem = await databaseServices.coupons.findOne({ name: coupon.toUpperCase() })
-    if (!couponItem) throw new Error("Coupon not found!")
+
+    if (couponItem === null) throw new Error("Coupon not found!")
 
     let cart = await databaseServices.carts.findOne({ orderby: user_id })
-    console.log("🚀 ~ file: users.services.ts:208 ~ UserServices ~ applyCoupon ~ couponItem:", couponItem)
-    console.log("🚀 ~ file: users.services.ts:211 ~ UserServices ~ applyCoupon ~ cart:", cart)
     if (!cart) throw new Error("Cart not found!")
     const totalAfterDiscount = ((cart.cartTotal * (100 - couponItem.discount)) / 100).toFixed(2)
     await databaseServices.carts.updateOne({ orderby: user_id }, { $set: { totalAfterDiscount: Number(totalAfterDiscount) } })
     return totalAfterDiscount
   }
-  // async createOrder(user_id: string, COD: boolean, couponApplied: boolean) {
-  //   if (!COD) throw new Error("Create cash order failed!")
-  //   const user = await this.getUserById(user_id);
-  //   const userCart = await this.getUserCart(user_id);
-  //   let finalAmount = userCart.totalAfterDiscount;
-  //   await databaseServices.order.insertOne(new Order({
-  //     products: userCart.products,
-  //   }))
-  // }
+  async createOrder(user_id: string, COD: boolean, couponApplied: boolean) {
+    if (!COD) throw new Error("Create cash order failed!")
+    const userCart = await databaseServices.carts.findOne({ orderby: user_id })
+    if (!userCart) throw new Error("Cart not found!")
+    let finalAmount = couponApplied ? userCart.totalAfterDiscount : userCart.cartTotal;
+    await databaseServices.order.insertOne(new Order({
+      products: userCart.products, payment_intent: {
+        id: uniqid(),
+        method: "COD",
+        amount: finalAmount,
+        status: statusOrder.CASH_ON_DELIVERY,
+        created: new Date(),
+        currency: "usd",
+      }, order_status: statusOrder.CASH_ON_DELIVERY, orderby: user_id
+    }))
+    let update = userCart.products.map((item) => ({
+      updateOne: {
+        filter: { _id: new ObjectId(item.product) },
+        update: { $inc: { quantity: -item.count, sold: +item.count } }
+      }
+    }));
+    const updated = await databaseServices.products.bulkWrite(update, {})
+    return updated
+  }
+  async getOrder(user_id: string) {
+    const order = await databaseServices.order.findOne({ orderby: user_id });
+    if (!order) throw new Error("Order not found!")
+    const productUser = await databaseServices.carts.findOne({ orderby: user_id })
+    if (!productUser) throw new Error("Cart is empty!")
+    const updatedProducts = await this.getProduct(productUser);
+    return {
+      ...order,
+      products: updatedProducts
+    }
+  }
+  async updateOrderStatus(user_id: string, id_order: string, status: statusOrder) {
+    return await databaseServices.order.findOneAndUpdate({ _id: new ObjectId(id_order), orderby: user_id }, { $set: { order_status: status, payment_intent: { status: status } } }, { returnDocument: "after" })
+  }
 }
 export const userServices = new UserServices()
