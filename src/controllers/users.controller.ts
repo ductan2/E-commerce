@@ -28,6 +28,17 @@ export const loginController: RequestHandler<{}, {}, LoginRequestBody> = async (
   }
 }
 
+export const loginAdminController: RequestHandler<{}, {}, LoginRequestBody> = async (req, res) => {
+  try {
+    const { email, password } = req.body
+    const result = await userServices.loginAdmin(email, password)
+    res.cookie('refresh_token', result.refresh_token, { httpOnly: true, maxAge: 72 * 60 * 60 * 1000 })
+    return res.status(200).json({ message: "Login successfully", status: 200, result })
+  } catch (error: any) {
+    return res.status(ErrorStatus.INTERNAL_SERVER).json({ message: "Login failed", status: ErrorStatus.INTERNAL_SERVER, error: error.message })
+  }
+}
+
 export const forgotPasswordTokenController: RequestHandler = async (req, res) => {
   try {
     const { email } = req.body
@@ -77,6 +88,28 @@ export const getUserController: RequestHandler = async (req, res) => {
     return res.status(ErrorStatus.FORBIDDEN).json({ message: "Get user failed", status: ErrorStatus.FORBIDDEN, error })
   }
 }
+export const getEmptyCartController = async (req: Request, res: Response) => {
+  const { _id } = req.user
+  console.log("🚀 ~ file: users.controller.ts:93 ~ getEmptyCartController ~ _id:", _id)
+  try {
+    const result = await userServices.emptyCart(_id)
+    return res.status(200).json({ message: "Empty cart successfully", status: 200, result })
+  } catch (error) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Empty cart failed", status: ErrorStatus.BAD_REQUEST, error })
+  }
+}
+
+export const applyCouponController = async (req: Request, res: Response) => {
+  const { coupon } = req.body
+  const { _id } = req.user
+  try {
+    const result = await userServices.applyCoupon(coupon, _id)
+    return res.status(200).json({ message: "Apply coupon successfully", status: 200, result })
+  } catch (error) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ error, message: "Apply coupon failed", status: ErrorStatus.BAD_REQUEST })
+  }
+}
+
 export const updateUserController = async (req: Request, res: Response) => {
   const { _id } = req.user
   try {
@@ -133,7 +166,7 @@ export const updatePasswordController = async (req: Request, res: Response) => {
     const { _id } = req.user
     const { oldPassword, newPassword } = req.body
     const result = await userServices.updatePassword(_id, oldPassword, newPassword)
-    return res.status(200).json({ message: "Update password successfully", status: 200, result})
+    return res.status(200).json({ message: "Update password successfully", status: 200, result })
   } catch (error: any) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Update password failed", status: ErrorStatus.BAD_REQUEST, error: error.message })
   }
@@ -150,5 +183,42 @@ export const logoutController: RequestHandler = async (req, res) => {
     return res.sendStatus(204)
   } catch (error: any) {
     return res.status(ErrorStatus.FORBIDDEN).json({ message: "Logout failed", status: ErrorStatus.FORBIDDEN })
+  }
+}
+export const getWhishListController = async (req: Request, res: Response) => {
+  try {
+    const result = await userServices.getWishList(req.user.email)
+    return res.status(200).json({ message: "Get wishlist successfully", status: 200, result })
+  } catch (error: any) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Get wishlist failed", status: ErrorStatus.BAD_REQUEST, error: error.message })
+  }
+}
+export const userCartController = async (req: Request, res: Response) => {
+  try {
+    const { cart } = req.body
+    const { _id } = req.user
+    const result = await userServices.userCart(_id, cart)
+    return res.status(200).json({ message: "Get cart successfully", status: 200, result })
+  } catch (error: any) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Get cart failed", status: ErrorStatus.BAD_REQUEST, error: error.message })
+  }
+}
+export const getUserCartController = async (req: Request, res: Response) => {
+  try {
+    const { _id } = req.user;
+    const result = await userServices.getUserCart(_id)
+    return res.status(200).json({ message: "Get cart successfully", status: 200, result })
+  } catch (error) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Get cart failed", status: ErrorStatus.BAD_REQUEST, error })
+  }
+}
+export const createOrder = async (req: Request, res: Response) => {
+  const { COD, couponApplied } = req.body
+  try {
+    const { _id } = req.user;
+    const result = await userServices.createOrder(_id, COD, couponApplied)
+    return res.status(200).json({ message: "Create order successfully", status: 200, result })
+  } catch (error) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Create order failed", status: ErrorStatus.BAD_REQUEST, error })
   }
 }

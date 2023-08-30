@@ -13,4 +13,11 @@ export enum BrandType {
   XIAOMI = "Xiaomi",
   NO_BRAND = "No brand",
 }
-
+export enum statusOrder{
+  NOT_PROCESSED = "Not processed",
+  CASH_ON_DELIVERY = "Cash on delivery",
+  PROCESSING = "Processing",
+  DISPATCHED = "Dispatched",
+  CANCELLED = "Cancelled",
+  DELIVERED = "Delivered",
+}

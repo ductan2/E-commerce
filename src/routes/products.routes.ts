@@ -14,7 +14,6 @@ router.post('/', validate(ProductsValidator), createProductController)
 
 router.get("/get-all-products", getAllProductController)
 
-
 router.get('/:id', getProductController)
 
 router.patch('/:id', validate(UpdateProductValidator), filterMiddleware<ProductType>(["brand", "category", "color", "description", "images", "price", "quantity", "ratings", "slug", "sold", "title"]), updateProductController)

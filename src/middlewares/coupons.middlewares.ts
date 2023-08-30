@@ -9,7 +9,7 @@ export const CouponsValidator = checkSchema({
     isString: true,
     isLength: {
       options: {
-        min: 5,
+        min: 1,
         max: 100,
       }
     },
@@ -39,7 +39,7 @@ export const updateCouponsValidator = checkSchema({
     isString: true,
     isLength: {
       options: {
-        min: 5,
+        min: 1,
         max: 100,
       }
     },

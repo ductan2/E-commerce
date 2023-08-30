@@ -24,7 +24,7 @@ export const authMiddlewares = async (req: Request, res: Response, next: NextFun
 }
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
   if (req.user?.role !== "admin") {
-    next(new Error("Not authorized as an admin"))
+    return res.status(403).json({ message: "You do not have permission to access!", status: 403 })
   }
   next()
 }
