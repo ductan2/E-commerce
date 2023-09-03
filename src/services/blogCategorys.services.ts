@@ -1,6 +1,7 @@
 
 import databaseServices from "./database.services";
 import { ObjectId } from "mongodb";
+import { ErrroWithStatus } from "~/constants/type";
 import BlogCategorys, { BlogCategpryType } from "~/models/blogCategorys.models";
 
 
@@ -9,13 +10,15 @@ class BlogCategorysServices {
     return await databaseServices.blogCategorys.insertOne(new BlogCategorys({ ...payload }))
   }
   async updateBlogCategory(id: string, payload: BlogCategpryType) {
-    return await databaseServices.blogCategorys.findOneAndUpdate({
+    const result = await databaseServices.blogCategorys.findOneAndUpdate({
       _id: new ObjectId(id)
     }, {
       $set: {
         ...payload, updated_at: new Date()
       }
     }, { returnDocument: "after" })
+    if (result.value === null) throw new ErrroWithStatus({ message: "BlogCategory does not exits!", status: 404 })
+    return result
   }
   async deleteBlogCategory(id: string) {
     return await databaseServices.blogCategorys.deleteOne({

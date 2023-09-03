@@ -1,6 +1,6 @@
 import express from "express"
-import { addToWishListController, createProductController, deleteProductController, getAllProductController, getProductController, ratingController, updateProductController, uploadImageController } from "~/controllers/products.controller";
-import { authMiddlewares } from "~/middlewares/auth.middlewares";
+import { addToWishListController, createProductController, deleteImageController, deleteProductController, getAllProductController, getProductController, ratingController, updateProductController, uploadImageController } from "~/controllers/products.controller";
+import { authMiddlewares, isAdmin } from "~/middlewares/auth.middlewares";
 import { filterMiddleware } from "~/middlewares/filter.middlewares";
 import { ProductsValidator, RatingValidator, UpdateProductValidator, WishListValidator } from "~/middlewares/products.middlewares";
 import { ProductType } from "~/models/products.models";
@@ -8,7 +8,9 @@ import { validate } from "~/utils/validate";
 const router = express.Router();
 
 
-router.put('/upload/:id', uploadImageController)
+router.put('/upload/:id', authMiddlewares, isAdmin, uploadImageController)
+
+router.delete('/delete-image/:id', authMiddlewares, isAdmin, deleteImageController)
 
 router.post('/', validate(ProductsValidator), createProductController)
 

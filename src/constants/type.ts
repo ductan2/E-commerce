@@ -1,14 +1,21 @@
+import { ObjectId, WithId } from "mongodb";
+import { type } from "os";
+import { ProductType } from "~/models/products.models";
+
 export type EmailData = {
   to: string;
   subject: string;
   text?: string;
   html?: string;
 };
-export type ProductInfo = {
-  _id: string;
-  title: string;
-  price: number;
-};
+
+export type ProductOrder= {
+  product: WithId<ProductType>;
+  color: string;
+  count: number;
+  price?: number | undefined;
+}
+
 
 
 

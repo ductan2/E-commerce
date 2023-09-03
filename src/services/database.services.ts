@@ -1,14 +1,16 @@
 import { Collection, Db, MongoClient } from "mongodb";
 import dotenv from "dotenv";
-import { UserType } from "~/models/users.models";
-import { ProductType } from "~/models/products.models";
-import { BlogType } from "~/models/blogs.models";
+import User from "~/models/users.models";
+import Products from "~/models/products.models";
+import Blogs from "~/models/blogs.models";
 import ProcCategorys from "~/models/procCategorys.models";
 import BlogCategorys from "~/models/blogCategorys.models";
-import { BrandType } from "~/models/brand.models";
-import { CouponType } from "~/models/coupons.models";
-import { CartType } from "~/models/carts.models";
-import { OrderType } from "~/models/order.models";
+import Brands from "~/models/brand.models";
+import Coupons from "~/models/coupons.models";
+import { Carts } from "~/models/carts.models";
+import { Order } from "~/models/order.models";
+import { Colors } from "~/models/colors.models";
+import { Contact } from "~/models/contact.models";
 dotenv.config();
 
 const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.hdfborf.mongodb.net/`;
@@ -31,13 +33,13 @@ class DatabaseServices {
       console.log("Connect failed");
     }
   }
-  get users(): Collection<UserType> {
+  get users(): Collection<User> {
     return this.db.collection("users")
   }
-  get products(): Collection<ProductType> {
+  get products(): Collection<Products> {
     return this.db.collection("products")
   }
-  get blogs(): Collection<BlogType> {
+  get blogs(): Collection<Blogs> {
     return this.db.collection("blogs")
   }
   get productCategorys(): Collection<ProcCategorys> {
@@ -46,17 +48,23 @@ class DatabaseServices {
   get blogCategorys(): Collection<BlogCategorys> {
     return this.db.collection("blogCategorys")
   }
-  get brands(): Collection<BrandType> {
+  get brands(): Collection<Brands> {
     return this.db.collection("brands")
   }
-  get coupons(): Collection<CouponType> {
+  get coupons(): Collection<Coupons> {
     return this.db.collection("coupons")
   }
-  get carts(): Collection<CartType> {
+  get carts(): Collection<Carts> {
     return this.db.collection("carts")
   }
-  get order(): Collection<OrderType> {
+  get order(): Collection<Order> {
     return this.db.collection("order")
+  }
+  get colors(): Collection<Colors> {
+    return this.db.collection("colors")
+  }
+  get contact(): Collection<Contact> {
+    return this.db.collection("contact")
   }
 }
 

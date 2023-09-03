@@ -17,7 +17,7 @@ export const updateProcCategoryController = async (req: Request, res: Response) 
     const { value } = await procCategorysServices.updateProcCategory(id, req.body)
     return res.status(200).json({ message: "Update ProcCategory successfully", status: 200, result: value })
   } catch (error: any) {
-    return res.status(400).json({ message: error.message || "Update ProcCategory failed", status: 400 })
+    return res.status(error.status || 400).json({ message: error.message || "Update Color failed", status: error.status || 400 })
   }
 }
 export const deleteProcCategoryController = async (req: Request, res: Response) => {

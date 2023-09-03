@@ -6,6 +6,8 @@ import productCategoysRouter from "./procCategorys.routes"
 import blogCategorysRouter from "./blogCategory.routes"
 import brandsRouter from "./brands.routes"
 import couponsRouter from "./coupons.routes"
+import colorsRouter from "./colors.routes"
+import contactRouter from "./contact.routes"
 const router = express.Router();
 
 
@@ -17,4 +19,6 @@ router.use('/procCategorys', productCategoysRouter)
 router.use('/blogCategorys', blogCategorysRouter)
 router.use('/brands', brandsRouter)
 router.use('/coupons', couponsRouter)
+router.use("/colors", colorsRouter)
+router.use("/contact", contactRouter)
 export default router;

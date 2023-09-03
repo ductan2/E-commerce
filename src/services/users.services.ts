@@ -1,16 +1,17 @@
-import { ObjectId } from "mongodb";
-import { ErrroWithStatus, ProductInfo, RegisterRequestBody } from "~/constants/type";
+import { ObjectId, WithId } from "mongodb";
+import { ErrroWithStatus, ProductOrder, RegisterRequestBody, UpdateInfo } from "~/constants/type";
 import databaseServices from "./database.services";
 import { checkPassword, hassPassword } from "~/utils/bcrypt";
-import User from "~/models/users.models";
+import User, { UserType } from "~/models/users.models";
 import { generatorToken } from "~/utils/jwt";
 import { ErrorStatus, statusOrder } from "~/constants/enum";
 import { generatorRefreshToken } from "~/utils/jwt"
 import jwt from "jsonwebtoken"
 import crypto from "crypto"
 import { CartType, Carts } from "~/models/carts.models";
-import { Order } from "~/models/order.models";
+import { Order, OrderType } from "~/models/order.models";
 import uniqid from 'uniqid';
+import { ProductType } from "~/models/products.models";
 class UserServices {
   async register(payload: RegisterRequestBody) {
     const user_id = new ObjectId();
@@ -76,20 +77,18 @@ class UserServices {
     if (!refresh_token) throw new Error("Refresh token not found!")
     return databaseServices.users.findOneAndUpdate({ refresh_token }, { $set: { refresh_token: "" } })
   }
-  async getAllUser() {
+  async getAllUser(): Promise<UserType[]> {
     return databaseServices.users.find().toArray()
   }
-  async getUserById(user_id: string) {
+  async getUserById(user_id: string): Promise<UserType | null> {
     return databaseServices.users.findOne({ _id: new ObjectId(user_id) })
   }
-  async updateUserById(user_id: ObjectId, payload: any) {
+  async updateUserById(user_id: ObjectId, payload: UpdateInfo) {
     const isCheck = await this.getUserById(user_id.toString());
-    if (isCheck) {
-      return databaseServices.users.findOneAndUpdate({ _id: user_id }, { $set: { ...payload, updated_at: new Date() } }, { returnDocument: "after" })
+    if (!isCheck) {
+      throw new Error("User not found!")
     }
-    else {
-      return null
-    }
+    return databaseServices.users.findOneAndUpdate({ _id: user_id }, { $set: { ...payload, updated_at: new Date() } }, { returnDocument: "after" })
   }
   async deleteUserById(user_id: string) {
     const isCheck = await this.getUserById(user_id);
@@ -177,10 +176,10 @@ class UserServices {
     }))
     return await databaseServices.carts.findOne({ orderby: user_id })
   }
-  async getProduct(productUser: CartType) {
-    const updatedProducts = [];
+  async getProduct(productUser: CartType): Promise<ProductOrder[]> {
+    const updatedProducts: ProductOrder[] = [];
     for (const product of productUser.products) {
-      const foundProduct = await databaseServices.products.findOne({ _id: new ObjectId(product.product) }
+      const foundProduct: WithId<ProductType> | null = await databaseServices.products.findOne({ _id: new ObjectId(product.product) }
         , { projection: { quantity: 1, title: 1, _id: 1 } });
       if (foundProduct) {
         const updatedProduct = {
@@ -192,7 +191,6 @@ class UserServices {
     }
     return updatedProducts
   }
- 
   async getUserCart(user_id: string) {
     const productUser = await databaseServices.carts.findOne({ orderby: user_id })
     if (!productUser) throw new Error("Cart is empty!")
@@ -252,8 +250,18 @@ class UserServices {
       products: updatedProducts
     }
   }
-  async updateOrderStatus(user_id: string, id_order: string, status: statusOrder) {
-    return await databaseServices.order.findOneAndUpdate({ _id: new ObjectId(id_order), orderby: user_id }, { $set: { order_status: status, payment_intent: { status: status } } }, { returnDocument: "after" })
+  async updateOrderStatus(user_id: string, id_order: string, status: statusOrder): Promise<OrderType> {
+    const updatedOrder = await databaseServices.order.findOneAndUpdate(
+      { _id: new ObjectId(id_order), orderby: user_id },
+      { $set: { order_status: status, payment_intent: { status: status } } },
+      { returnDocument: "after" }
+    );
+    
+    if (updatedOrder && updatedOrder.value) {
+      return updatedOrder.value;
+    } else {
+      throw new Error("Order not found or update failed");
+    }
   }
 }
 export const userServices = new UserServices()

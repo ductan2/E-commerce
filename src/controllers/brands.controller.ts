@@ -19,7 +19,7 @@ export const updateBrandController = async (req: Request, res: Response) => {
     console.log("Hàm this");
     return res.status(200).json({ message: "Update Brand successfully", status: 200, result: value })
   } catch (error: any) {
-    return res.status(400).json({ message: error.message || "Update Brand failed", status: 400 })
+    return res.status(error.status || 400).json({ message: error.message || "Update Color failed", status: error.status || 400 })
   }
 }
 export const deleteBrandController = async (req: Request, res: Response) => {

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ErrorStatus } from "~/constants/enum";
 import { productServices } from "~/services/products.services";
+import { cloudinaryDeleteImage } from "~/utils/cloudinary";
 import { initFolder } from "~/utils/file";
 
 export const createProductController = async (req: Request, res: Response) => {
@@ -75,5 +76,14 @@ export const uploadImageController = async (req: Request, res: Response) => {
     return res.status(200).json({ message: "Upload image successfully", status: 200, result: value })
   } catch (error) {
     return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Upload image failed", status: ErrorStatus.INTERNAL_SERVER })
+  }
+}
+export const deleteImageController = async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const uploader = cloudinaryDeleteImage(id);
+    return res.json({ message: "Delete image successfully", status: 200 })
+  } catch (error) {
+    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Delete image failed", status: ErrorStatus.INTERNAL_SERVER })
   }
 }

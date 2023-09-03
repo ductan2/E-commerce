@@ -124,7 +124,6 @@ class ProductServices {
       })
       urls.push(await cloudinaryUploadImage(newPath))
     }))
-    console.log("🚀 ~ file: products.services.ts:126 ~ ProductServices ~ result ~ urls:", urls)
     return await databaseServices.products.findOneAndUpdate({ _id: new ObjectId(req.params.id) }, {
       $push: {
         images: { $each: urls }

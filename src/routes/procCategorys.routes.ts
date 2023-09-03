@@ -1,7 +1,9 @@
 import express from "express"
 import { checkSchema } from "express-validator"
 import { createProcCategoryController, deleteProcCategoryController, getAllProcCategoryController, getProcCategoryController, updateProcCategoryController } from "~/controllers/procCategorys.controller"
+import { authMiddlewares, isAdmin } from "~/middlewares/auth.middlewares"
 import databaseServices from "~/services/database.services"
+import { validate } from "~/utils/validate"
 
 const router = express.Router()
 const procCategorySchema = checkSchema({
@@ -27,15 +29,15 @@ const procCategorySchema = checkSchema({
 }, ["body"])
 
 
-router.post("/", procCategorySchema, createProcCategoryController)
+router.post("/",authMiddlewares,isAdmin, validate(procCategorySchema), createProcCategoryController)
 
-router.put("/:id",procCategorySchema,updateProcCategoryController)
+router.put("/:id",authMiddlewares,isAdmin,validate(procCategorySchema),updateProcCategoryController)
 
-router.delete("/:id",deleteProcCategoryController)
+router.delete("/:id",authMiddlewares,isAdmin,deleteProcCategoryController)
 
-router.get("/get-all",getAllProcCategoryController)
+router.get("/get-all",authMiddlewares,isAdmin,getAllProcCategoryController)
 
-router.get("/:id",getProcCategoryController)
+router.get("/:id",authMiddlewares,isAdmin,getProcCategoryController)
 
 
 

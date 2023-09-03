@@ -17,7 +17,7 @@ export const updateBlogCategoryController = async (req: Request, res: Response) 
     const { value } = await blogCategorysServices.updateBlogCategory(id, req.body)
     return res.status(200).json({ message: "Update BlogCategory successfully", status: 200, result: value })
   } catch (error: any) {
-    return res.status(400).json({ message: error.message || "Update BlogCategory failed", status: 400 })
+    return res.status(error.status || 400).json({ message: error.message || "Update BlogCategory failed", status: error.status || 400 })
   }
 }
 export const deleteBlogCategoryController = async (req: Request, res: Response) => {
@@ -46,5 +46,3 @@ export const getAllBlogCategoryController = async (req: Request, res: Response) 
     return res.status(400).json({ message: error.message || "Get all BlogCategory failed", status: 400 })
   }
 }
-
-

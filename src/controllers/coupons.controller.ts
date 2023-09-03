@@ -33,7 +33,7 @@ export const updateCouponController = async (req: Request, res: Response) => {
       result: value
     })
   } catch (error: any) {
-    return res.status(400).json({ message: error.message || "Update coupon failed", status: 400 })
+    return res.status(error.status || 400).json({ message: error.message || "Update Color failed", status: error.status || 400 })
   }
 }
 export const deleteCouponController = async (req: Request, res: Response) => {

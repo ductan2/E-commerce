@@ -44,7 +44,7 @@ export const forgotPasswordTokenController: RequestHandler = async (req, res) =>
     const { email } = req.body
     const token = await userServices.forgotPasswordToken(email)
     const resetUrl = `Hi ${email}, please click this link to reset your password: <a href="http://localhost:${process.env.PORT}/api/users/reset-password/${token}">Reset password</a>`
-    const data : EmailData = {
+    const data: EmailData = {
       to: email,
       text: `Hey ${email}`,
       subject: "Reset password",
@@ -112,8 +112,8 @@ export const applyCouponController = async (req: Request, res: Response) => {
 export const updateUserController = async (req: Request, res: Response) => {
   const { _id } = req.user
   try {
-    const result = await userServices.updateUserById(_id, req.body)
-    return res.status(200).json({ message: "Update user successfully", status: 200, result })
+    const { value } = await userServices.updateUserById(_id, req.body)
+    return res.status(200).json({ message: "Update user successfully", status: 200, result: value })
   } catch (error) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Update user failed", status: ErrorStatus.BAD_REQUEST, error })
   }
@@ -235,8 +235,8 @@ export const updateOrderStatusController = async (req: Request, res: Response) =
     const { id: id_order } = req.params;
     const { status } = req.body;
     const { _id: id_user } = req.user
-    const { value } = await userServices.updateOrderStatus(id_user, id_order, status)
-    return res.status(200).json({ message: "Update order status successfully", status: 200, result: value })
+    const result = await userServices.updateOrderStatus(id_user, id_order, status)
+    return res.status(200).json({ message: "Update order status successfully", status: 200, result })
   } catch (error) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Update order status failed", status: ErrorStatus.BAD_REQUEST, error })
   }
