@@ -1,6 +1,7 @@
 
 import { ObjectId } from "mongodb"
 import User from "./users.models"
+import { UploadImageType } from "~/constants/type"
 
 
 
@@ -14,7 +15,7 @@ export interface BlogType {
   isDisliked: boolean
   likes: string[] | User[] // refrerence to user
   dislikes: string[] | User[] // refrerence to user
-  images: string
+  images: UploadImageType | string
   author: string
   craeted_at?: Date
   updated_at?: Date
@@ -29,7 +30,7 @@ export default class Blogs {
   isDisliked: boolean
   likes: string[] | User[]// refrerence to user
   dislikes: string[] | User[] // refrerence to user
-  images: string
+  images: UploadImageType | string
   author: string
   craeted_at?: Date
   updated_at?: Date

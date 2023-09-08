@@ -34,7 +34,8 @@ export const getColorsController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const result = await colorsServices.getColors(id)
-    return res.status(200).json(result)
+    return res.status(200).json({ message: "Get a color successfully", status: 200, result })
+
   } catch (error: any) {
     return res.status(400).json({ message: error.message || "Get Colors failed", status: 400 })
   }
@@ -42,7 +43,7 @@ export const getColorsController = async (req: Request, res: Response) => {
 export const getAllColorsController = async (req: Request, res: Response) => {
   try {
     const result = await colorsServices.getAllColors()
-    return res.status(200).json(result)
+    return res.status(200).json({ message: "Get all Colors successfully", status: 200, result })
   } catch (error: any) {
     return res.status(400).json({ message: error.message || "Get all Colors failed", status: 400 })
   }

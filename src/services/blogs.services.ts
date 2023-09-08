@@ -2,8 +2,14 @@ import Blogs, { BlogType } from "~/models/blogs.models";
 import databaseServices from "./database.services";
 import { ObjectId } from "mongodb";
 import { ErrroWithStatus } from "~/constants/type";
-import { JwtPayload } from "jsonwebtoken";
-
+import { getFileName, handleuploadImage } from "~/utils/file";
+import { Request } from "express";
+import path from "path";
+import { UPLOAD_IMAGE_BLOG_DIR, UPLOAD_IMAGE_BLOG_TEMP_DIR, UPLOAD_IMAGE_PRODUCT_TEMP_DIR } from "~/constants/dir";
+import sharp from "sharp";
+import { File } from "formidable";
+import fs from "fs"
+import { cloudinaryUploadImage } from "~/utils/cloudinary";
 
 class BlogServices {
   async createBlog(payload: BlogType) {
@@ -112,6 +118,26 @@ class BlogServices {
     else {
       return await databaseServices.blogs.findOneAndUpdate({ _id: new ObjectId(id_blog) }, { $set: { isDisliked: true }, $push: { dislikes: user_id } }, { returnDocument: "after" })
     }
+  }
+  async uploadImage(req: Request) {
+    const files = await handleuploadImage(req, UPLOAD_IMAGE_BLOG_TEMP_DIR) as any;
+    let image: any = [];
+    await Promise.all(files.map(async (file: File) => {
+      const fileName = getFileName(file)
+      const newPath = path.resolve(UPLOAD_IMAGE_BLOG_DIR, `${fileName}`)
+      console.log(newPath)
+      await sharp(file.filepath).jpeg().toFile(newPath)
+      fs.unlink(file.filepath, (err) => {
+        console.log(err)
+      })
+      image = await cloudinaryUploadImage(newPath)
+    }))
+    console.log(image);
+    return await databaseServices.blogs.findOneAndUpdate({ _id: new ObjectId(req.params.id) }, {
+      $set: {
+        images: image
+      }
+    }, { returnDocument: "after" })
   }
 }
 

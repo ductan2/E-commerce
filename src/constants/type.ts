@@ -9,14 +9,18 @@ export type EmailData = {
   html?: string;
 };
 
-export type ProductOrder= {
+export type ProductOrder = {
   product: WithId<ProductType>;
   color: string;
   count: number;
   price?: number | undefined;
 }
 
-
+export type UploadImageType = {
+  url: string
+  asset_id: string
+  public_id: string
+}
 
 
 export interface RegisterRequestBody {

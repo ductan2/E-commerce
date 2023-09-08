@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { UPLOAD_IMAGE_PRODUCT_TEMP_DIR } from "~/constants/dir";
 import { ErrorStatus } from "~/constants/enum";
 import { productServices } from "~/services/products.services";
 import { cloudinaryDeleteImage } from "~/utils/cloudinary";
@@ -40,15 +41,16 @@ export const deleteProductController = async (req: Request, res: Response) => {
     return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Delete Product failed", status: ErrorStatus.INTERNAL_SERVER })
   }
 }
+
 export const getAllProductController = async (req: Request, res: Response) => {
   try {
-    res.setHeader('Content-Type', 'application/json');
+ 
     const queryObj = { ...req.query }
-    console.log("🚀 ~ file: products.controller.ts:46 ~ getAllProductController ~ queryObj:", queryObj)
     const result = await productServices.getAllProducts(queryObj)
-    return res.status(200).json({ result })
+    return res.status(200).json({ message: "Get Products successfully", status: 200, result })
   } catch (error) {
-    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Get Products failed", status: ErrorStatus.INTERNAL_SERVER })
+    console.log("🚀 ~ file: products.controller.ts:51 ~ getAllProductController ~ error:", error)
+    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Get Products failed", status: ErrorStatus.INTERNAL_SERVER,error })
   }
 }
 export const addToWishListController = async (req: Request, res: Response) => {
@@ -72,9 +74,8 @@ export const ratingController = async (req: Request, res: Response) => {
   }
 }
 export const uploadImageController = async (req: Request, res: Response) => {
-  initFolder();
+  initFolder(UPLOAD_IMAGE_PRODUCT_TEMP_DIR);
   try {
-
     const { value } = await productServices.uploadImage(req)
     return res.status(200).json({ message: "Upload image successfully", status: 200, result: value })
   } catch (error) {

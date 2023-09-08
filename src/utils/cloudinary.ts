@@ -1,4 +1,5 @@
 import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
+import { UploadImageType } from '~/constants/type';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -6,6 +7,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 export const cloudinaryUploadImage = async (fileToUploads: any) => {
+  console.log("🚀 ~ file: cloudinary.ts:9 ~ cloudinaryUploadImage ~ fileToUploads:", fileToUploads)
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload(fileToUploads, (error: any, result: UploadApiResponse) => {
       if (error) return reject(error);

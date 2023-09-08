@@ -8,12 +8,20 @@ import fs from "fs";
 import path from 'path';
 import sharp from 'sharp';
 import { File } from 'formidable';
-import { UPLOAD_IMAGE_DIR } from "~/constants/dir";
+import { UPLOAD_IMAGE_PRODUCT_DIR, UPLOAD_IMAGE_PRODUCT_TEMP_DIR } from "~/constants/dir";
 import { Request } from "express";
 import { cloudinaryUploadImage } from "~/utils/cloudinary";
+import { UploadImageType } from "~/constants/type";
 class ProductServices {
   async createProduct(payload: ProductType) {
     const _id = new ObjectId();
+
+    await databaseServices.brands.updateOne({ _id: new ObjectId(payload.brand as string) }, {
+      $inc: {
+        quantity: 1
+      }
+    })
+
     await databaseServices.products.insertOne(new Products({
       _id,
       ...payload,
@@ -23,6 +31,10 @@ class ProductServices {
   }
   async getProduct(id: string) {
     return await databaseServices.products.findOne({ _id: new ObjectId(id) })
+  }
+  async getColors(colors: { color: string }[]) {
+    const ids = colors.map((item) => new ObjectId(item.color))
+    return await databaseServices.colors.find({ _id: { $in: ids } }).toArray()
   }
   async getAllProducts(queryObj: any) {
     let filterQuery: any = {
@@ -40,10 +52,75 @@ class ProductServices {
     if (queryObj.sort) {
       querySort = queryObj.sort.split(",").join(" ");
     }
+    else {
+      querySort = { created_at: -1 };
+    }
     const page = Number(queryObj.page) || 1;
     if (page < 1) throw new Error("Page must be greater than 0");
     const limit = 3;
     const skip = (page - 1) * limit;
+    const pipeTest = [
+      {
+        '$match': {
+          ...queryObj
+        }
+      }, {
+        '$lookup': {
+          'from': 'colors',
+          'localField': 'color',
+          'foreignField': '_id',
+          'as': 'color'
+        }
+      }, {
+        '$addFields': {
+          'color': {
+            '$map': {
+              'input': '$color',
+              'as': 'color',
+              'in': {
+                '_id': '$$color._id',
+                'title': '$$color.title'
+              }
+            }
+          }
+        }
+      }, {
+        '$lookup': {
+          'from': 'productCategorys',
+          'localField': 'category',
+          'foreignField': '_id',
+          'as': 'category'
+        }
+      }, {
+        '$addFields': {
+          'category': {
+            '$map': {
+              'input': '$category',
+              'as': 'cate',
+              'in': {
+                '_id': '$$cate._id',
+                'title': '$$cate.title'
+              }
+            }
+          }
+        }
+      }, {
+        $lookup: {
+          from: "brands", // Tên của collection chứa thông tin về brand
+          localField: "brand", // Trường trong collection products
+          foreignField: "_id", // Trường trong collection brands
+          as: "brand" // Tên của mảng kết quả sau khi join
+        }
+      },
+      {
+        $unwind: "$brand" // Loại bỏ mảng brandInfo để có một tài liệu duy nhất
+      },
+      {
+        $addFields: {
+          "brand": "$brand.title" // Cập nhật trường "brand" trong collection products
+        }
+      }
+    ]
     const pipeline = [
       {
         $match: {
@@ -73,6 +150,28 @@ class ProductServices {
         }
       },
       {
+        $lookup: {
+          from: "brands",
+          localField: "brand",
+          foreignField: "_id",
+          as: "brand",
+        },
+      },
+      {
+        $addFields: {
+          brand: {
+            $map: {
+              input: "$brand",
+              as: "br",
+              in: {
+                _id: "$$br._id",
+                title: "$$br.title",
+              },
+            },
+          },
+        },
+      },
+      {
         $sort: {
           ...querySort
         }
@@ -84,10 +183,8 @@ class ProductServices {
         $skip: skip // Skip stage
       }
     ];
-    // console.log("🚀 ~ file: products.services.ts:87 ~ ProductServices ~ getAllProducts ~ pipeline:", pipeline)
-    return await databaseServices.products.find(filterQuery).sort(querySort).limit(limit).skip(skip).toArray();
-    // return await databaseServices.products.aggregate(pipeline).toArray();
-
+    const result = await databaseServices.products.aggregate(pipeTest).toArray();
+    return result;
   }
   async updateProduct(id: string, payload: ProductType) {
     const product = await databaseServices.products.findOne({ _id: new ObjectId(id) })
@@ -153,18 +250,20 @@ class ProductServices {
     })
   }
   async uploadImage(req: Request) {
-    const files = await handleuploadImage(req) as any;
+    const files = await handleuploadImage(req, UPLOAD_IMAGE_PRODUCT_TEMP_DIR) as any;
 
     const urls: any[] = []
     await Promise.all(files.map(async (file: File) => {
+
       const fileName = getFileName(file)
-      const newPath = path.resolve(UPLOAD_IMAGE_DIR, `${fileName}`)
+      const newPath = path.resolve(UPLOAD_IMAGE_PRODUCT_DIR, `${fileName}`)
       await sharp(file.filepath).jpeg().toFile(newPath)
       fs.unlink(file.filepath, (err) => {
         console.log(err)
       })
       urls.push(await cloudinaryUploadImage(newPath))
     }))
+
     return await databaseServices.products.findOneAndUpdate({ _id: new ObjectId(req.params.id) }, {
       $push: {
         images: { $each: urls }

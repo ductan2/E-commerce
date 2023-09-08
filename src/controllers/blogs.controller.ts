@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
+import { UPLOAD_IMAGE_BLOG_TEMP_DIR } from "~/constants/dir";
 import { ErrorStatus } from "~/constants/enum";
 import { blogServices } from "~/services/blogs.services";
+import { cloudinaryDeleteImage } from "~/utils/cloudinary";
+import { initFolder } from "~/utils/file";
 
 
 export const createBlogController = async (req: Request, res: Response) => {
@@ -68,5 +71,23 @@ export const disLikesBlogController = async (req: Request, res: Response) => {
     return res.status(200).json({ message: "Dislike Blog successfully", status: 200, result: value })
   } catch (error: any) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: error.message || "Dislike Blog failed", status: ErrorStatus.BAD_REQUEST })
+  }
+}
+export const uploadImageController = async (req: Request, res: Response) => {
+  initFolder(UPLOAD_IMAGE_BLOG_TEMP_DIR);
+  try {
+    const { value } = await blogServices.uploadImage(req)
+    return res.status(200).json({ message: "Upload image successfully", status: 200, result: value })
+  } catch (error) {
+    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Upload image failed", status: ErrorStatus.INTERNAL_SERVER })
+  }
+}
+export const deleteImageController = async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const uploader = cloudinaryDeleteImage(id);
+    return res.json({ message: "Delete image successfully", status: 200 })
+  } catch (error) {
+    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Delete image failed", status: ErrorStatus.INTERNAL_SERVER })
   }
 }

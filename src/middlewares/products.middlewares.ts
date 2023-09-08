@@ -45,16 +45,26 @@ export const ProductsValidator = checkSchema({
   },
   category: {
     notEmpty: true,
-    isLength: {
-      options: {
-        min: 2,
-        max: 50,
-      },
-      errorMessage: "Category must be at least 2 characters long and less than 25 characters long."
-    },
+    isArray: true,
+    errorMessage: "Category must be an array objectId",
+    custom: {
+      options: async (value) => {
+        const ids = value.map((item: string) => new ObjectId(item))
+        const isProc = await databaseServices.productCategorys.find({ _id: { $in: ids } }).toArray()
+        if (isProc.length !== value.length) throw new ErrroWithStatus({ message: "Category is not exist", status: 404 })
+        return true;
+      }
+    }
   },
   brand: {
-    isIn: { options: [["Apple", "Samsung", "Lenovo", "Xiaomi", "No brand"]], errorMessage: "Brand is invalid!" }
+    optional: true,
+    custom: {
+      options: async (value) => {
+        const isBrand = await databaseServices.brands.findOne({ _id: new ObjectId(value) })
+        if(!isBrand) throw new ErrroWithStatus({ message: "Brand is not exist", status: 404 })
+        return true; 
+      }
+    }
   },
   quantity: {
     notEmpty: true,

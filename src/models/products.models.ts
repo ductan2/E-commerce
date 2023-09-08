@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb"
-import { BrandType } from "~/constants/enum"
 import { RatingType, imageUrl } from "~/constants/type"
 
 
@@ -10,8 +9,8 @@ export interface ProductType {
   slug?: string
   description?: string
   price?: number
-  brand?: BrandType
-  category?: any[] // category 
+  brand?: ObjectId | string
+  category?: ObjectId[] // category 
   quantity?: number
   sold?: number
   images?: any[]
@@ -27,8 +26,8 @@ export default class Products {
   slug?: string
   description?: string
   price?: number
-  brand?: BrandType
-  category?: any[] // category 
+  brand?: ObjectId | string // brandType
+  category?: ObjectId[] // category 
   quantity?: number
   sold?: number
   images?: any[]
@@ -44,12 +43,12 @@ export default class Products {
     this.slug = product.slug || ""
     this.description = product.description || ""
     this.price = product.price || 0
-    this.brand = product.brand || BrandType.NO_BRAND
-    this.category = product.category || []
+    this.brand = new ObjectId(product.brand) || "NO BRAND"
+    this.category = product.category?.map((item) => new ObjectId(item)) || []
     this.quantity = product.quantity || 0
     this.images = product.images || []
     this.sold = product.sold || 0
-    this.color = product.color?.map((item: any) => new ObjectId(item)) || []
+    this.color = product.color?.map((item) => new ObjectId(item)) || []
     this.rating_distribution = product.rating_distribution || 5
     this.ratings = product.ratings || []
     this.craeted_at = product.craeted_at || date

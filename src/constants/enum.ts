@@ -6,13 +6,7 @@ export enum ErrorStatus {
   FORBIDDEN = 403,
   UNPROCESSABLE_ENTITY = 422,
 }
-export enum BrandType {
-  APPLE = "Apple",
-  SAMSUNG = "Samsung",
-  LENOVO = "Lenovo",
-  XIAOMI = "Xiaomi",
-  NO_BRAND = "No brand",
-}
+
 export enum statusOrder {
   NOT_PROCESSED = "Not processed",
   CASH_ON_DELIVERY = "Cash on delivery",

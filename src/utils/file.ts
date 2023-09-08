@@ -2,13 +2,12 @@
 import { Fields, File, Files, Part } from "formidable";
 import fs from "fs"
 import { Request } from 'express';
-import { UPLOAD_IMAGE_TEMP_DIR } from "~/constants/dir";
 
 
-export const initFolder = () => {
-
-  if (!fs.existsSync(UPLOAD_IMAGE_TEMP_DIR)) {
-    fs.mkdirSync(UPLOAD_IMAGE_TEMP_DIR, { recursive: true });
+export const initFolder = (folderUpload: string) => {
+  console.log("🚀 ~ file: file.ts:9 ~ initFolder ~ folderUpload:", folderUpload)
+  if (!fs.existsSync(folderUpload)) {
+    fs.mkdirSync(folderUpload, { recursive: true });
   }
 
 }
@@ -33,16 +32,15 @@ export const getFileName = (files: File): string => {
 };
 
 
-export const handleuploadImage = async (req: Request) => {
+export const handleuploadImage = async (req: Request, folderUpload: string) => {
   const { default: formidable } = await import('formidable');
   const form = formidable({
-    uploadDir: UPLOAD_IMAGE_TEMP_DIR,
+    uploadDir: folderUpload,
     keepExtensions: true,
     multiples: true,
     maxFields: 1,
     maxFileSize: 2 * 1024 * 1024,
     filter: ({ name, originalFilename, mimetype }: Part): boolean => {
-    
       if (originalFilename === "") return false;
       // check ext empty file and type file
       const valid = name === 'image' && Boolean(mimetype?.includes("image/"))
@@ -55,7 +53,7 @@ export const handleuploadImage = async (req: Request) => {
   return new Promise(async (resolve, reject) => {
     try {
       form.parse(req, async (err, fields: Fields, files: Files) => {
-        if(files===undefined || !files) return reject({
+        if (files === undefined || !files) return reject({
           message: "File is empty",
           status: 400,
         });
