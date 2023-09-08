@@ -42,7 +42,9 @@ export const deleteProductController = async (req: Request, res: Response) => {
 }
 export const getAllProductController = async (req: Request, res: Response) => {
   try {
+    res.setHeader('Content-Type', 'application/json');
     const queryObj = { ...req.query }
+    console.log("🚀 ~ file: products.controller.ts:46 ~ getAllProductController ~ queryObj:", queryObj)
     const result = await productServices.getAllProducts(queryObj)
     return res.status(200).json({ result })
   } catch (error) {
@@ -72,6 +74,7 @@ export const ratingController = async (req: Request, res: Response) => {
 export const uploadImageController = async (req: Request, res: Response) => {
   initFolder();
   try {
+
     const { value } = await productServices.uploadImage(req)
     return res.status(200).json({ message: "Upload image successfully", status: 200, result: value })
   } catch (error) {

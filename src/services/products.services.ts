@@ -44,9 +44,49 @@ class ProductServices {
     if (page < 1) throw new Error("Page must be greater than 0");
     const limit = 3;
     const skip = (page - 1) * limit;
-
-
+    const pipeline = [
+      {
+        $match: {
+          ...filterQuery
+        }
+      },
+      {
+        $lookup: {
+          from: 'colors',
+          localField: 'color',
+          foreignField: '_id',
+          as: 'color'
+        }
+      },
+      {
+        $addFields: {
+          'color': {
+            $map: {
+              input: '$color',
+              as: 'color',
+              in: {
+                '_id': '$$color._id',
+                'title': '$$color.title'
+              }
+            }
+          }
+        }
+      },
+      {
+        $sort: {
+          ...querySort
+        }
+      },
+      {
+        $limit: limit // Limit stage
+      },
+      {
+        $skip: skip // Skip stage
+      }
+    ];
+    // console.log("🚀 ~ file: products.services.ts:87 ~ ProductServices ~ getAllProducts ~ pipeline:", pipeline)
     return await databaseServices.products.find(filterQuery).sort(querySort).limit(limit).skip(skip).toArray();
+    // return await databaseServices.products.aggregate(pipeline).toArray();
 
   }
   async updateProduct(id: string, payload: ProductType) {
@@ -114,8 +154,9 @@ class ProductServices {
   }
   async uploadImage(req: Request) {
     const files = await handleuploadImage(req) as any;
+
     const urls: any[] = []
-     await Promise.all(files.map(async (file: File) => {
+    await Promise.all(files.map(async (file: File) => {
       const fileName = getFileName(file)
       const newPath = path.resolve(UPLOAD_IMAGE_DIR, `${fileName}`)
       await sharp(file.filepath).jpeg().toFile(newPath)

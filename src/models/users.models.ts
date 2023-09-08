@@ -12,10 +12,11 @@ export interface UserType {
   mobile: string;
   password: string;
   role?: Role
+  address?: string;
   blocked?: boolean
   cart?: any[]
   wishlist?: string[] // href of product
-  address?: string
+  avatar?: string
   refresh_token?: string
   password_reset_token?: string
   password_reset_expires?: Date
@@ -32,9 +33,10 @@ export default class User {
   mobile: string;
   password: string;
   role: Role;
+  address?: string;
   blocked?: boolean
   wishlist?: string[]
-  address?: string
+  avatar?: string
   refresh_token?: string
   password_reset_token?: string
   password_reset_expires?: Date
@@ -50,8 +52,9 @@ export default class User {
     this.mobile = user.mobile;
     this.password = user.password;
     this.role = user.role || Role.USER
-    this.address = user.address || ""
+    this.avatar = user.avatar || "https://anubis.gr/wp-content/uploads/2018/03/no-avatar.png"
     this.blocked = user.blocked || false
+    this.address = user.address || ""
     this.refresh_token = user.refresh_token || ""
     this.password_reset_token = user.password_reset_token || ""
     this.wishlist = user.wishlist || []

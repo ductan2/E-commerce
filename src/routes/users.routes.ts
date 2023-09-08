@@ -16,7 +16,7 @@ router.post("/register", validate(RegisterValidator), registerController)
 
 router.post("/login", validate(LoginValidator), loginController)
 
-router.post('/login-admin', validate(LoginValidator), loginAdminController)
+router.post('/login-admin', loginAdminController)
 
 router.get("/refresh-token", refreshTokenController)
 

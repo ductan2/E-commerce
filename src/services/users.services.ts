@@ -23,20 +23,21 @@ class UserServices {
   }
   async loginAdmin(email: string, password: string) {
     const admin = await databaseServices.users.findOne({ email })
-    if (admin?.role !== "admin") throw new ErrroWithStatus({ message: "You do not have permission to access!", status: ErrorStatus.NOT_FOUND })
     if (!admin) {
-      throw new ErrroWithStatus({ message: "You do not have permission to access!", status: ErrorStatus.NOT_FOUND })
+      throw new ErrroWithStatus({ message: "Email not found!", status: ErrorStatus.NOT_FOUND })
     }
+    if (admin?.role !== "admin") throw new ErrroWithStatus({ message: "You do not have permission to access!", status: ErrorStatus.FORBIDDEN })
     const isPassword = checkPassword(password, admin.password)
     if (!isPassword) {
       throw new ErrroWithStatus({ message: "Password is incoret!", status: ErrorStatus.UNAUTHORIZED })
     }
     const refresh_token = generatorRefreshToken(admin._id.toString())
     await databaseServices.users.updateOne({ _id: admin._id }, { $set: { refresh_token } })
-
+    const data = await databaseServices.users.findOne({ _id: admin._id }, { projection: { _id: 1, firstname: 1, lastname: 1, mobile: 1, email: 1, token: 1, role: 1 } })
     return {
       token: generatorToken(admin._id.toString()),
-      refresh_token
+      refresh_token,
+      data
     }
   }
   async login(email: string, password: string) {
@@ -78,7 +79,9 @@ class UserServices {
     return databaseServices.users.findOneAndUpdate({ refresh_token }, { $set: { refresh_token: "" } })
   }
   async getAllUser(): Promise<UserType[]> {
-    return databaseServices.users.find().toArray()
+    return databaseServices.users.find({}, {
+      projection: { password: 0, password_reset_expires: 0, password_reset_token: 0, refresh_token: 0 }
+    }).toArray()
   }
   async getUserById(user_id: string): Promise<UserType | null> {
     return databaseServices.users.findOne({ _id: new ObjectId(user_id) })
@@ -256,7 +259,7 @@ class UserServices {
       { $set: { order_status: status, payment_intent: { status: status } } },
       { returnDocument: "after" }
     );
-    
+
     if (updatedOrder && updatedOrder.value) {
       return updatedOrder.value;
     } else {

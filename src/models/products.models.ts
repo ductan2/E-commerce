@@ -15,7 +15,7 @@ export interface ProductType {
   quantity?: number
   sold?: number
   images?: any[]
-  color?: string[]
+  color?: ObjectId[]
   ratings?: RatingType[]
   rating_distribution?: number
   craeted_at?: Date
@@ -32,7 +32,7 @@ export default class Products {
   quantity?: number
   sold?: number
   images?: any[]
-  color?: string[]
+  color?: ObjectId[]
   ratings?: RatingType[]
   rating_distribution?: number
   craeted_at?: Date
@@ -49,7 +49,7 @@ export default class Products {
     this.quantity = product.quantity || 0
     this.images = product.images || []
     this.sold = product.sold || 0
-    this.color = product.color || []
+    this.color = product.color?.map((item: any) => new ObjectId(item)) || []
     this.rating_distribution = product.rating_distribution || 5
     this.ratings = product.ratings || []
     this.craeted_at = product.craeted_at || date

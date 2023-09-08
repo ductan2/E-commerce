@@ -41,7 +41,7 @@ export const getProcCategoryController = async (req: Request, res: Response) => 
 export const getAllProcCategoryController = async (req: Request, res: Response) => {
   try {
     const result = await procCategorysServices.getAllProcCategory()
-    return res.status(200).json(result)
+    return res.status(200).json({ message: "Get ProcCategory successfully", status: 200, result })
   } catch (error: any) {
     return res.status(400).json({ message: error.message || "Get all ProcCategory failed", status: 400 })
   }

@@ -35,9 +35,9 @@ router.put("/:id",authMiddlewares,isAdmin,validate(procCategorySchema),updatePro
 
 router.delete("/:id",authMiddlewares,isAdmin,deleteProcCategoryController)
 
-router.get("/get-all",authMiddlewares,isAdmin,getAllProcCategoryController)
+router.get("/get-all",getAllProcCategoryController)
 
-router.get("/:id",authMiddlewares,isAdmin,getProcCategoryController)
+router.get("/:id",getProcCategoryController)
 
 
 
