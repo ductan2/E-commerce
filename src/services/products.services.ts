@@ -30,7 +30,71 @@ class ProductServices {
     return databaseServices.products.findOne({ _id })
   }
   async getProduct(id: string) {
-    return await databaseServices.products.findOne({ _id: new ObjectId(id) })
+
+    const pipe = [
+      {
+        '$match': {
+          _id: new ObjectId(id)
+        }
+      }, {
+        '$lookup': {
+          'from': 'colors',
+          'localField': 'color',
+          'foreignField': '_id',
+          'as': 'color'
+        }
+      }, {
+        '$addFields': {
+          'color': {
+            '$map': {
+              'input': '$color',
+              'as': 'color',
+              'in': {
+                '_id': '$$color._id',
+                'title': '$$color.title'
+              }
+            }
+          }
+        }
+      }, {
+        '$lookup': {
+          'from': 'productCategorys',
+          'localField': 'category',
+          'foreignField': '_id',
+          'as': 'category'
+        }
+      }, {
+        '$addFields': {
+          'category': {
+            '$map': {
+              'input': '$category',
+              'as': 'cate',
+              'in': {
+                '_id': '$$cate._id',
+                'title': '$$cate.title'
+              }
+            }
+          }
+        }
+      }, {
+        $lookup: {
+          from: "brands", // Tên của collection chứa thông tin về brand
+          localField: "brand", // Trường trong collection products
+          foreignField: "_id", // Trường trong collection brands
+          as: "brand" // Tên của mảng kết quả sau khi join
+        }
+      },
+      {
+        $unwind: "$brand" // Loại bỏ mảng brandInfo để có một tài liệu duy nhất
+      },
+      {
+        $addFields: {
+          "brand": "$brand.title" // Cập nhật trường "brand" trong collection products
+        }
+      },
+    ]
+
+    return await databaseServices.products.aggregate(pipe).toArray()
   }
   async getColors(colors: { color: string }[]) {
     const ids = colors.map((item) => new ObjectId(item.color))
@@ -119,57 +183,6 @@ class ProductServices {
         $addFields: {
           "brand": "$brand.title" // Cập nhật trường "brand" trong collection products
         }
-      }
-    ]
-    const pipeline = [
-      {
-        $match: {
-          ...filterQuery
-        }
-      },
-      {
-        $lookup: {
-          from: 'colors',
-          localField: 'color',
-          foreignField: '_id',
-          as: 'color'
-        }
-      },
-      {
-        $addFields: {
-          'color': {
-            $map: {
-              input: '$color',
-              as: 'color',
-              in: {
-                '_id': '$$color._id',
-                'title': '$$color.title'
-              }
-            }
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: "brands",
-          localField: "brand",
-          foreignField: "_id",
-          as: "brand",
-        },
-      },
-      {
-        $addFields: {
-          brand: {
-            $map: {
-              input: "$brand",
-              as: "br",
-              in: {
-                _id: "$$br._id",
-                title: "$$br.title",
-              },
-            },
-          },
-        },
       },
       {
         $sort: {
@@ -182,7 +195,10 @@ class ProductServices {
       {
         $skip: skip // Skip stage
       }
-    ];
+    ]
+
+
+
     const result = await databaseServices.products.aggregate(pipeTest).toArray();
     return result;
   }
@@ -270,6 +286,53 @@ class ProductServices {
       }
     }, { returnDocument: "after" })
   }
+  async getAllOrders() {
+
+    const piper = [
+      {
+        '$lookup': {
+          'from': 'products',
+          'localField': 'products.product',
+          'foreignField': '_id',
+          'as': 'products_data'
+        }
+      }, {
+        '$addFields': {
+          'products': {
+            '$map': {
+              'input': '$products',
+              'as': 'product',
+              'in': {
+                '_id': '$$product._id',
+                'count': '$$product.count',
+                'color': '$$product.color',
+                'price': '$$product.price'
+              }
+            }
+          }
+        }
+      }, {
+        '$lookup': {
+          'from': 'users',
+          'localField': 'orderby',
+          'foreignField': '_id',
+          'as': 'orderby'
+        }
+      },
+      {
+        $unwind: "$orderby", // Loại bỏ mảng brandInfo để có một tài liệu duy nhất
+      },
+      {
+        $addFields: {
+          orderby: "$orderby.email", // Cập nhật trường "brand" trong collection products
+        },
+      },
+    ]
+    const result = await databaseServices.order.aggregate(piper).toArray()
+
+    return result;
+  }
+
 }
 
 //notice slug

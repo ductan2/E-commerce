@@ -47,7 +47,7 @@ export const getBrandController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const result = await brandsServices.getBrand(id)
-    return res.status(200).json(result)
+    return res.status(200).json({ message: "Get brand successfully", status: 200, result })
   } catch (error: any) {
     return res.status(400).json({ message: error.message || "Get Brand failed", status: 400 })
   }
@@ -55,7 +55,7 @@ export const getBrandController = async (req: Request, res: Response) => {
 export const getAllBrandController = async (req: Request, res: Response) => {
   try {
     const result = await brandsServices.getAllBrand()
-    return res.status(200).json(result)
+    return res.status(200).json({ message: "Get all brand successfully", status: 200, result })
   } catch (error: any) {
     return res.status(400).json({ message: error.message || "Get all Brand failed", status: 400 })
   }

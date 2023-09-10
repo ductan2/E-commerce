@@ -160,7 +160,7 @@ class UserServices {
     await databaseServices.carts.findOneAndDelete({ orderby: user_id })
     for (let item of cart) {
       let object: any = {};
-      object.product = item._id;
+      object.product = new ObjectId(item._id);
       object.count = item.count;
       object.color = item.color;
       let getPrice = await databaseServices.products.find(
@@ -175,7 +175,7 @@ class UserServices {
       cartTotal += item.count * item.price
     }
     await databaseServices.carts.insertOne(new Carts({
-      products: products, cartTotal, orderby: user_id
+      products:products, cartTotal, orderby: user_id
     }))
     return await databaseServices.carts.findOne({ orderby: user_id })
   }
@@ -233,9 +233,10 @@ class UserServices {
         currency: "usd",
       }, order_status: statusOrder.CASH_ON_DELIVERY, orderby: user_id
     }))
+    console.log("what failed 2")
     let update = userCart.products.map((item) => ({
       updateOne: {
-        filter: { _id: new ObjectId(item.product) },
+        filter: { _id: item.product },
         update: { $inc: { quantity: -item.count, sold: +item.count } }
       }
     }));

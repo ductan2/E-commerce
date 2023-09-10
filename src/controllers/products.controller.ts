@@ -18,7 +18,7 @@ export const getProductController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const result = await productServices.getProduct(id)
-    return res.status(200).json({ result })
+    return res.status(200).json({ message: "Get a product successfully", status: 200, result })
   } catch (error) {
     return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Get Product failed", status: ErrorStatus.INTERNAL_SERVER })
   }
@@ -44,13 +44,13 @@ export const deleteProductController = async (req: Request, res: Response) => {
 
 export const getAllProductController = async (req: Request, res: Response) => {
   try {
- 
+
     const queryObj = { ...req.query }
     const result = await productServices.getAllProducts(queryObj)
     return res.status(200).json({ message: "Get Products successfully", status: 200, result })
   } catch (error) {
     console.log("🚀 ~ file: products.controller.ts:51 ~ getAllProductController ~ error:", error)
-    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Get Products failed", status: ErrorStatus.INTERNAL_SERVER,error })
+    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Get Products failed", status: ErrorStatus.INTERNAL_SERVER, error })
   }
 }
 export const addToWishListController = async (req: Request, res: Response) => {
@@ -89,5 +89,13 @@ export const deleteImageController = async (req: Request, res: Response) => {
     return res.json({ message: "Delete image successfully", status: 200 })
   } catch (error) {
     return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Delete image failed", status: ErrorStatus.INTERNAL_SERVER })
+  }
+}
+export const getAllOrdersController = async (req: Request, res: Response) => {
+  try {
+    const result = await productServices.getAllOrders()
+    return res.status(200).json({ message: "Get all orders successfully", status: 200, result })
+  } catch (error) {
+    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Get all orders failed", status: ErrorStatus.INTERNAL_SERVER })
   }
 }

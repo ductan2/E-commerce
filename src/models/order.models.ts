@@ -2,16 +2,24 @@ import { ObjectId } from "mongodb"
 import { statusOrder } from "~/constants/enum"
 
 export interface orderProduct {
-  product: string
+  product: ObjectId
   color: string
   count: number
   price?: number
+}
+type PaymentIntentType={
+  id?: string
+  method?:string
+  amount?:number
+  status?:statusOrder
+  created?:Date
+  currency?:string
 }
 
 export interface OrderType {
   _id?: ObjectId
   products: orderProduct[]
-  payment_intent: object
+  payment_intent: PaymentIntentType
   order_status: statusOrder
   orderby: string// ref user
   created_at?: Date
@@ -21,7 +29,7 @@ export interface OrderType {
 export class Order {
   _id?: ObjectId
   products: orderProduct[]
-  payment_intent: object
+  payment_intent: PaymentIntentType
   order_status: statusOrder
   orderby: string// ref user
   created_at?: Date

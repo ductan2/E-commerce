@@ -218,6 +218,7 @@ export const createOrderController = async (req: Request, res: Response) => {
     const result = await userServices.createOrder(_id, COD, couponApplied)
     return res.status(200).json({ message: "Create order successfully", status: 200, result })
   } catch (error) {
+    console.log("🚀 ~ file: users.controller.ts:221 ~ createOrderController ~ error:", error)
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Create order failed", status: ErrorStatus.BAD_REQUEST, error })
   }
 }
