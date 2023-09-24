@@ -10,8 +10,6 @@ const router = express.Router();
 
 router.post("/", authMiddlewares, isAdmin, validate(BlogValidator), createBlogController)
 
-
-
 router.get("/get-all", getAllBlogsController)
 
 router.put("/likes", authMiddlewares, likesBlogController)

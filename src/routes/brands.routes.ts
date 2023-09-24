@@ -21,9 +21,7 @@ const brandSchema = checkSchema({
     custom: {
       options: async (value, { req }) => {
         const isUnique = await databaseServices.brands.findOne({ title: value })
-
         if (isUnique) {
-
           throw new Error("Title is already in use")
         }
       }
@@ -36,7 +34,7 @@ router.post("/", validate(brandSchema), createBrandController)
 
 router.put("/upload/:id", authMiddlewares, isAdmin, uploadImageBrandController)
 
-router.put("/:id", validate(brandSchema), updateBrandController)
+router.put("/:id", updateBrandController)
 
 router.delete("/:id", deleteBrandController)
 

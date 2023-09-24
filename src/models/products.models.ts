@@ -13,6 +13,8 @@ export interface ProductType {
   category?: ObjectId[] // category 
   quantity?: number
   sold?: number
+  trending?: boolean
+  featured?: boolean
   images?: any[]
   color?: ObjectId[]
   ratings?: RatingType[]
@@ -29,6 +31,8 @@ export default class Products {
   brand?: ObjectId | string // brandType
   category?: ObjectId[] // category 
   quantity?: number
+  trending?: boolean
+  featured?: boolean
   sold?: number
   images?: any[]
   color?: ObjectId[]
@@ -48,6 +52,8 @@ export default class Products {
     this.quantity = product.quantity || 0
     this.images = product.images || []
     this.sold = product.sold || 0
+    this.trending = product.trending || false
+    this.featured = product.featured || false
     this.color = product.color?.map((item) => new ObjectId(item)) || []
     this.rating_distribution = product.rating_distribution || 5
     this.ratings = product.ratings || []

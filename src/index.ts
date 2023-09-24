@@ -19,7 +19,6 @@ app.listen(PORT, () => {
   console.log(`This is http://localhost:${PORT}`)
 })
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.log(err)
   res.status(err.status).json({ error: err.message, status: err.status })
 })
 app.use('/api', router) 

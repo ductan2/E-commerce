@@ -15,11 +15,11 @@ export const authMiddlewares = async (req: Request, res: Response, next: NextFun
         next()
       }
     } catch (error) {
-      next(new Error("Not authorized, token expired"))
+      next(error)
     }
   }
   else {
-    next(new Error("Token not found"))
+    return next(new Error("Token not found"))
   }
 }
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {

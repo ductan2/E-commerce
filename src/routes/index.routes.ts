@@ -8,6 +8,7 @@ import brandsRouter from "./brands.routes"
 import couponsRouter from "./coupons.routes"
 import colorsRouter from "./colors.routes"
 import contactRouter from "./contact.routes"
+import uploadRouter from "./upload.routes"
 const router = express.Router();
 
 
@@ -21,4 +22,5 @@ router.use('/brands', brandsRouter)
 router.use('/coupons', couponsRouter)
 router.use("/colors", colorsRouter)
 router.use("/contact", contactRouter)
+router.use('/uploads',uploadRouter)
 export default router;

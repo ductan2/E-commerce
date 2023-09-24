@@ -11,7 +11,7 @@ import { File } from 'formidable';
 import { UPLOAD_IMAGE_PRODUCT_DIR, UPLOAD_IMAGE_PRODUCT_TEMP_DIR } from "~/constants/dir";
 import { Request } from "express";
 import { cloudinaryUploadImage } from "~/utils/cloudinary";
-import { UploadImageType } from "~/constants/type";
+import { ProductQuery } from "~/constants/type";
 class ProductServices {
   async createProduct(payload: ProductType) {
     const _id = new ObjectId();
@@ -30,7 +30,6 @@ class ProductServices {
     return databaseServices.products.findOne({ _id })
   }
   async getProduct(id: string) {
-
     const pipe = [
       {
         '$match': {
@@ -100,111 +99,111 @@ class ProductServices {
     const ids = colors.map((item) => new ObjectId(item.color))
     return await databaseServices.colors.find({ _id: { $in: ids } }).toArray()
   }
-  async getAllProducts(queryObj: any) {
-    let filterQuery: any = {
-      title: { $regex: new RegExp(queryObj.title || "", "i") },
-      brand: { $regex: new RegExp(queryObj.brand || "", "i") },
-      category: { $regex: new RegExp(queryObj.category || "", "i") },
-    };
-    if (queryObj.minPrice && queryObj.maxPrice) {
-      filterQuery.price = {
-        $gte: Number(queryObj.minPrice),
-        $lte: Number(queryObj.maxPrice)
-      };
+  async getAllProducts(queryObj: ProductQuery) {
+    let brandId: ObjectId | undefined;
+    if (queryObj.brand) {
+      const brandName = await databaseServices.brands.findOne({ title: RegExp(queryObj.brand || "", "i") })
+      brandId = brandName?._id;
     }
-    let querySort = {};
-    if (queryObj.sort) {
-      querySort = queryObj.sort.split(",").join(" ");
-    }
-    else {
-      querySort = { created_at: -1 };
-    }
-    const page = Number(queryObj.page) || 1;
-    if (page < 1) throw new Error("Page must be greater than 0");
-    const limit = 3;
-    const skip = (page - 1) * limit;
-    const pipeTest = [
+    const pipeline = [
       {
-        '$match': {
-          ...queryObj
-        }
-      }, {
-        '$lookup': {
-          'from': 'colors',
-          'localField': 'color',
-          'foreignField': '_id',
-          'as': 'color'
-        }
-      }, {
-        '$addFields': {
-          'color': {
-            '$map': {
-              'input': '$color',
-              'as': 'color',
-              'in': {
-                '_id': '$$color._id',
-                'title': '$$color.title'
-              }
-            }
-          }
-        }
-      }, {
-        '$lookup': {
-          'from': 'productCategorys',
-          'localField': 'category',
-          'foreignField': '_id',
-          'as': 'category'
-        }
-      }, {
-        '$addFields': {
-          'category': {
-            '$map': {
-              'input': '$category',
-              'as': 'cate',
-              'in': {
-                '_id': '$$cate._id',
-                'title': '$$cate.title'
-              }
-            }
-          }
-        }
-      }, {
-        $lookup: {
-          from: "brands", // Tên của collection chứa thông tin về brand
-          localField: "brand", // Trường trong collection products
-          foreignField: "_id", // Trường trong collection brands
-          as: "brand" // Tên của mảng kết quả sau khi join
-        }
+        $match: {
+          $and: [
+            queryObj.title ? { title: { $regex: new RegExp(queryObj.title, 'i') } } : {},
+            queryObj.brand ? { brand: brandId } : {},
+            { price: { $gte: queryObj.minPrice || 0, $lte: queryObj.maxPrice || Number.MAX_VALUE } },
+          ],
+        },
       },
       {
-        $unwind: "$brand" // Loại bỏ mảng brandInfo để có một tài liệu duy nhất
+        $sort: queryObj.sort ? { [queryObj.sort]: queryObj.sort === 'desc' ? -1 : 1 } : { created_at: 1 },
+      },
+      {
+        $skip: queryObj.page && queryObj.page > 0 ? (queryObj.page - 1) * (queryObj.limit || 10) : 0,
+      },
+      {
+        $limit: queryObj.limit ? Number(queryObj.limit) : 10,
+      },
+      {
+        $lookup: {
+          from: 'colors',
+          localField: 'color',
+          foreignField: '_id',
+          as: 'color',
+        },
       },
       {
         $addFields: {
-          "brand": "$brand.title" // Cập nhật trường "brand" trong collection products
-        }
+          color: {
+            $map: {
+              input: '$color',
+              as: 'color',
+              in: {
+                _id: '$$color._id',
+                title: '$$color.title',
+              },
+            },
+          },
+        },
       },
       {
-        $sort: {
-          ...querySort
-        }
+        $lookup: {
+          from: 'productCategorys',
+          localField: 'category',
+          foreignField: '_id',
+          as: 'category',
+        },
       },
       {
-        $limit: limit // Limit stage
+        $addFields: {
+          category: {
+            $map: {
+              input: '$category',
+              as: 'cate',
+              in: {
+                _id: '$$cate._id',
+                title: '$$cate.title',
+              },
+            },
+          },
+        },
       },
       {
-        $skip: skip // Skip stage
-      }
-    ]
-
-
-
-    const result = await databaseServices.products.aggregate(pipeTest).toArray();
-    return result;
+        $lookup: {
+          from: 'brands',
+          localField: 'brand',
+          foreignField: '_id',
+          as: 'brand',
+        },
+      },
+      {
+        $unwind: '$brand',
+      },
+      {
+        $addFields: {
+          brand: '$brand.title',
+        },
+      },
+    ];
+    const result = await databaseServices.products.aggregate(pipeline).toArray();
+    const totalItem= await this.getCountProducts(queryObj)
+    return {
+      total: totalItem.total,
+      data: result,
+    };
   }
+
   async updateProduct(id: string, payload: ProductType) {
     const product = await databaseServices.products.findOne({ _id: new ObjectId(id) })
-
+    if (payload.brand) {
+      payload.brand = new ObjectId(payload.brand);
+    }
+    if (payload.category) {
+      payload.category = payload.category.map((item) => new ObjectId(item));
+    }
+    if (payload.color) {
+      payload.color = payload.color.map((item) => new ObjectId(item));
+    }
     return await databaseServices.products.findOneAndUpdate({ _id: new ObjectId(id) }, {
       $set: {
         ...payload, updated_at: new Date(), slug: slug(payload.title || product?.title as string, { lower: true })
@@ -332,7 +331,35 @@ class ProductServices {
 
     return result;
   }
-
+  async getCountProducts(queryObj: ProductQuery) {
+    let brandId: ObjectId | undefined;
+    if (queryObj.brand) {
+      const brandName = await databaseServices.brands.findOne({ title: RegExp(queryObj.brand || "", "i") })
+      brandId = brandName?._id;
+    }
+  
+    const pipeline = [
+      {
+        $match: {
+          $and: [
+            queryObj.title ? { title: { $regex: new RegExp(queryObj.title, 'i') } } : {},
+            queryObj.brand ? { brand: brandId } : {},
+            { price: { $gte: queryObj.minPrice || 0, $lte: queryObj.maxPrice || Number.MAX_VALUE } },
+          ],
+        },
+      },
+      {
+        $count: "total", 
+      },
+    ];
+  
+    const result = await databaseServices.products.aggregate(pipeline).toArray();
+    if (result.length > 0) {
+      return { total: result[0].total };
+    } else {
+      return { total: 0 }; // Trường hợp không có sản phẩm nào thỏa mãn điều kiện tìm kiếm
+    }
+  }
 }
 
 //notice slug

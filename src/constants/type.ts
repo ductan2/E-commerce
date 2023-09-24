@@ -15,7 +15,16 @@ export type ProductOrder = {
   count: number;
   price?: number | undefined;
 }
-
+export interface ProductQuery {
+  title?: string | RegExp;
+  brand?: string | RegExp;
+  category?: string | RegExp;
+  minPrice?: number;
+  maxPrice?: number;
+  sort?: string;
+  page?: number;
+  limit?: number;
+}
 export type UploadImageType = {
   url: string
   asset_id: string

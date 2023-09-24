@@ -26,7 +26,8 @@ export const getBlogController = async (req: Request, res: Response) => {
 
 export const getAllBlogsController = async (req: Request, res: Response) => {
   try {
-    const result = await blogServices.getAllBlogs()
+    const obj={...req.query}
+    const result = await blogServices.getAllBlogs(obj)
     return res.status(200).json({ message: "Get All Blogs successfully", status: 200, result })
   } catch (error: any) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: error.message || "Get All Blogs failed", status: ErrorStatus.BAD_REQUEST })

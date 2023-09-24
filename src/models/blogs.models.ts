@@ -9,7 +9,7 @@ export interface BlogType {
   _id?: ObjectId
   title: string
   description: string
-  category: string
+  category: ObjectId[]
   numViews: number
   isLiked: boolean
   isDisliked: boolean
@@ -24,7 +24,7 @@ export default class Blogs {
   _id?: ObjectId
   title: string
   description: string
-  category: string
+  category: ObjectId[]
   numViews: number
   isLiked: boolean
   isDisliked: boolean
@@ -38,7 +38,7 @@ export default class Blogs {
     this._id = blog._id || new ObjectId()
     this.title = blog.title || ""
     this.description = blog.description || ""
-    this.category = blog.category || ""
+    this.category = blog.category.map(item=>new ObjectId(item)) || []
     this.numViews = blog.numViews || 0
     this.isLiked = blog.isLiked || false
     this.isDisliked = blog.isDisliked || false

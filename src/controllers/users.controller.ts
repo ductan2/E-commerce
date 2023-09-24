@@ -21,8 +21,9 @@ export const loginController: RequestHandler<{}, {}, LoginRequestBody> = async (
   try {
     const { email, password } = req.body
     const result = await userServices.login(email, password)
-    res.cookie('refresh_token', result.refresh_token, { httpOnly: true, maxAge: 72 * 60 * 60 * 1000 })
-    return res.status(200).json({ message: "Login successfully", status: 200, result })
+    res.cookie('refresh_token', result.refresh_token, { httpOnly: true, maxAge: 60 * 1000 }) // 3 days = 72 * 60 * 60 * 1000
+    return res.status(200).json({ message: "Login successfully", status: 200, result }) 
+
   } catch (error: any) {
     return res.status(ErrorStatus.INTERNAL_SERVER).json({ message: "Login failed", status: ErrorStatus.INTERNAL_SERVER, error: error.message })
   }

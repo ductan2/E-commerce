@@ -122,7 +122,13 @@ export const UpdateProductValidator = checkSchema({
   },
   brand: {
     optional: true,
-    isIn: { options: [["Apple", "Samsung", "Lenovo", "Xiaomi", "No brand"]], errorMessage: "Brand is invalid!" }
+    custom: {
+      options: async (value) => {
+        const isBrand = await databaseServices.brands.findOne({ _id: new ObjectId(value) })
+        if(!isBrand) throw new ErrroWithStatus({ message: "Brand is not exist", status: 404 })
+        return true; 
+      }
+    }
   },
   quantity: {
     optional: true,

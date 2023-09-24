@@ -7,7 +7,7 @@ import BlogCategorys, { BlogCategpryType } from "~/models/blogCategorys.models";
 
 class BlogCategorysServices {
   async createBlogCategory(payload: BlogCategpryType) {
-    return await databaseServices.blogCategorys.insertOne(new BlogCategorys({ ...payload }))
+    return await databaseServices.blogCategorys.insertOne(new BlogCategorys({ ...payload, created_at: new Date(), updated_at: new Date() }))
   }
   async updateBlogCategory(id: string, payload: BlogCategpryType) {
     const result = await databaseServices.blogCategorys.findOneAndUpdate({

@@ -30,7 +30,7 @@ class ProcCategorysServices {
     })
   }
   async getAllProcCategory() {
-    return await databaseServices.productCategorys.find().toArray()
+    return await databaseServices.productCategorys.find().sort({ title: 1 }).toArray()
   }
 }
 export const procCategorysServices = new ProcCategorysServices()

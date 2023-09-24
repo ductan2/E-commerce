@@ -13,6 +13,9 @@ import { cloudinaryUploadImage } from "~/utils/cloudinary";
 
 class BlogServices {
   async createBlog(payload: BlogType) {
+    if (payload.category) {
+      payload.category = payload.category.map((item) => new ObjectId(item))
+    }
     const result = await databaseServices.blogs.insertOne(new Blogs({
       ...payload,
     }))
@@ -67,11 +70,20 @@ class BlogServices {
   //   });
   //   return getBlog;
   // }
-  async getAllBlogs() {
-    const result = await databaseServices.blogs.find({}).toArray()
-    return result
+  async getAllBlogs(obj: { title?: string, sort?: string }) {
+    let query: any = {
+      title: { $regex: new RegExp(obj.title || "", "i") },
+    }
+    let querySort={}
+    if (obj.sort) {
+      querySort = obj.sort ? { [obj.sort]: obj.sort === 'desc' ? -1 : 1 } : { created_at: 1 };
+    }
+    return await databaseServices.blogs.find(query).sort(querySort).toArray()
   }
   async updateBlog(id: string, payload: BlogType) {
+    if (payload.category) {
+      payload.category = payload.category.map((item) => new ObjectId(item))
+    }
     const result = await databaseServices.blogs.findOneAndUpdate({ _id: new ObjectId(id) }, {
       $set: {
         ...payload, updated_at: new Date()
