@@ -193,11 +193,11 @@ export const getWhishListController = async (req: Request, res: Response) => {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Get wishlist failed", status: ErrorStatus.BAD_REQUEST, error: error.message })
   }
 }
-export const userCartController = async (req: Request, res: Response) => {
+export const userAddCartController = async (req: Request, res: Response) => {
   try {
     const { cart } = req.body
     const { _id } = req.user
-    const result = await userServices.userCart(_id, cart)
+    const result = await userServices.addCartByUserId(_id, cart)
     return res.status(200).json({ message: "Get cart successfully", status: 200, result })
   } catch (error: any) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Get cart failed", status: ErrorStatus.BAD_REQUEST, error: error.message })
@@ -219,7 +219,6 @@ export const createOrderController = async (req: Request, res: Response) => {
     const result = await userServices.createOrder(_id, COD, couponApplied)
     return res.status(200).json({ message: "Create order successfully", status: 200, result })
   } catch (error) {
-    console.log("🚀 ~ file: users.controller.ts:221 ~ createOrderController ~ error:", error)
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Create order failed", status: ErrorStatus.BAD_REQUEST, error })
   }
 }

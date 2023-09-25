@@ -3,7 +3,7 @@ import { UpdateInfo } from "~/constants/type";
 import {
   applyCouponController,
   blockUserController, createOrderController, deleteUserController, forgotPasswordTokenController, getAllUserController, getEmptyCartController, getOrderController, getUserCartController, getUserController, getWhishListController, loginAdminController, loginController, logoutController,
-  refreshTokenController, registerController, resetPasswordController, unBlockUserController, updateOrderStatusController, updatePasswordController, updateUserController, userCartController
+  refreshTokenController, registerController, resetPasswordController, unBlockUserController, updateOrderStatusController, updatePasswordController, updateUserController, userAddCartController
 } from "~/controllers/users.controller";
 import { authMiddlewares, isAdmin } from "~/middlewares/auth.middlewares";
 import { filterMiddleware } from "~/middlewares/filter.middlewares";
@@ -36,7 +36,7 @@ router.patch("/update-user", authMiddlewares, validate(UpdateValidator), filterM
 
 router.get('/whishlist', authMiddlewares, getWhishListController)
 
-router.post('/cart', authMiddlewares, userCartController)
+router.post('/cart', authMiddlewares, userAddCartController)
 
 router.get('/cart/get-cart', authMiddlewares, getUserCartController)
 

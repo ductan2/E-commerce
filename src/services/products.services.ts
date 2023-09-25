@@ -12,6 +12,7 @@ import { UPLOAD_IMAGE_PRODUCT_DIR, UPLOAD_IMAGE_PRODUCT_TEMP_DIR } from "~/const
 import { Request } from "express";
 import { cloudinaryUploadImage } from "~/utils/cloudinary";
 import { ProductQuery } from "~/constants/type";
+import { ProductAggregation } from "~/models/aggregation.models";
 class ProductServices {
   async createProduct(payload: ProductType) {
     const _id = new ObjectId();
@@ -30,70 +31,17 @@ class ProductServices {
     return databaseServices.products.findOne({ _id })
   }
   async getProduct(id: string) {
-    const pipe = [
-      {
-        '$match': {
-          _id: new ObjectId(id)
-        }
-      }, {
-        '$lookup': {
-          'from': 'colors',
-          'localField': 'color',
-          'foreignField': '_id',
-          'as': 'color'
-        }
-      }, {
-        '$addFields': {
-          'color': {
-            '$map': {
-              'input': '$color',
-              'as': 'color',
-              'in': {
-                '_id': '$$color._id',
-                'title': '$$color.title'
-              }
-            }
-          }
-        }
-      }, {
-        '$lookup': {
-          'from': 'productCategorys',
-          'localField': 'category',
-          'foreignField': '_id',
-          'as': 'category'
-        }
-      }, {
-        '$addFields': {
-          'category': {
-            '$map': {
-              'input': '$category',
-              'as': 'cate',
-              'in': {
-                '_id': '$$cate._id',
-                'title': '$$cate.title'
-              }
-            }
-          }
-        }
-      }, {
-        $lookup: {
-          from: "brands", // Tên của collection chứa thông tin về brand
-          localField: "brand", // Trường trong collection products
-          foreignField: "_id", // Trường trong collection brands
-          as: "brand" // Tên của mảng kết quả sau khi join
-        }
-      },
-      {
-        $unwind: "$brand" // Loại bỏ mảng brandInfo để có một tài liệu duy nhất
-      },
-      {
-        $addFields: {
-          "brand": "$brand.title" // Cập nhật trường "brand" trong collection products
-        }
-      },
-    ]
+    const aggregation = new ProductAggregation();
+    const result = await aggregation
+      .matchById(id)
+      .lookupColor()
+      .addColorField()
+      .lookupCategory()
+      .addCategoryField()
+      .addBrandInfo()
+      .execute(databaseServices.products);
 
-    return await databaseServices.products.aggregate(pipe).toArray()
+    return result;
   }
   async getColors(colors: { color: string }[]) {
     const ids = colors.map((item) => new ObjectId(item.color))
@@ -105,88 +53,19 @@ class ProductServices {
       const brandName = await databaseServices.brands.findOne({ title: RegExp(queryObj.brand || "", "i") })
       brandId = brandName?._id;
     }
-    const pipeline = [
-      {
-        $match: {
-          $and: [
-            queryObj.title ? { title: { $regex: new RegExp(queryObj.title, 'i') } } : {},
-            queryObj.brand ? { brand: brandId } : {},
-            { price: { $gte: queryObj.minPrice || 0, $lte: queryObj.maxPrice || Number.MAX_VALUE } },
-          ],
-        },
-      },
-      {
-        $sort: queryObj.sort ? { [queryObj.sort]: queryObj.sort === 'desc' ? -1 : 1 } : { created_at: 1 },
-      },
-      {
-        $skip: queryObj.page && queryObj.page > 0 ? (queryObj.page - 1) * (queryObj.limit || 10) : 0,
-      },
-      {
-        $limit: queryObj.limit ? Number(queryObj.limit) : 10,
-      },
-      {
-        $lookup: {
-          from: 'colors',
-          localField: 'color',
-          foreignField: '_id',
-          as: 'color',
-        },
-      },
-      {
-        $addFields: {
-          color: {
-            $map: {
-              input: '$color',
-              as: 'color',
-              in: {
-                _id: '$$color._id',
-                title: '$$color.title',
-              },
-            },
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'productCategorys',
-          localField: 'category',
-          foreignField: '_id',
-          as: 'category',
-        },
-      },
-      {
-        $addFields: {
-          category: {
-            $map: {
-              input: '$category',
-              as: 'cate',
-              in: {
-                _id: '$$cate._id',
-                title: '$$cate.title',
-              },
-            },
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'brands',
-          localField: 'brand',
-          foreignField: '_id',
-          as: 'brand',
-        },
-      },
-      {
-        $unwind: '$brand',
-      },
-      {
-        $addFields: {
-          brand: '$brand.title',
-        },
-      },
-    ];
-    const result = await databaseServices.products.aggregate(pipeline).toArray();
-    const totalItem= await this.getCountProducts(queryObj)
+    const aggregation = new ProductAggregation();
+    const result = await aggregation
+      .matchObject(queryObj, brandId)
+      .lookupColor()
+      .addColorField()
+      .lookupCategory()
+      .addCategoryField()
+      .addBrandInfo()
+      .sortObject(queryObj.sort ? { [queryObj.sort]: queryObj.sort === 'desc' ? -1 : 1 } : { created_at: 1 })
+      .skip(queryObj.page && queryObj.page > 0 ? (queryObj.page - 1) * (queryObj.limit || 10) : 0)
+      .limit(queryObj.limit ? Number(queryObj.limit) : 10)
+      .execute(databaseServices.products);
+    const totalItem = await this.getCountProducts(queryObj)
     return {
       total: totalItem.total,
       data: result,
@@ -289,45 +168,52 @@ class ProductServices {
 
     const piper = [
       {
-        '$lookup': {
-          'from': 'products',
-          'localField': 'products.product',
-          'foreignField': '_id',
-          'as': 'products_data'
-        }
-      }, {
-        '$addFields': {
-          'products': {
-            '$map': {
-              'input': '$products',
-              'as': 'product',
-              'in': {
-                '_id': '$$product._id',
-                'count': '$$product.count',
-                'color': '$$product.color',
-                'price': '$$product.price'
-              }
-            }
-          }
-        }
-      }, {
-        '$lookup': {
-          'from': 'users',
-          'localField': 'orderby',
-          'foreignField': '_id',
-          'as': 'orderby'
+        $lookup: {
+          from: "users",
+          localField: "orderby",
+          foreignField: "_id",
+          as: "orderby"
         }
       },
       {
-        $unwind: "$orderby", // Loại bỏ mảng brandInfo để có một tài liệu duy nhất
+        $unwind: "$orderby"
       },
       {
         $addFields: {
-          orderby: "$orderby.email", // Cập nhật trường "brand" trong collection products
-        },
+          orderby: "$orderby.email"
+        }
       },
+      {
+        $unwind: "$products"
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "products.product",
+          foreignField: "_id",
+          as: "products"
+        }
+      },
+      {
+        $unwind: "$products"
+      },
+      {
+        $lookup: {
+          from: "colors",
+          localField: "products.color",
+          foreignField: "_id",
+          as: "products.color"
+        }
+      },
+      {
+        $addFields: {
+          "products.color": { $arrayElemAt: ["$products.color.title", 0] }
+        }
+      }
     ]
+
     const result = await databaseServices.order.aggregate(piper).toArray()
+
 
     return result;
   }
@@ -337,7 +223,7 @@ class ProductServices {
       const brandName = await databaseServices.brands.findOne({ title: RegExp(queryObj.brand || "", "i") })
       brandId = brandName?._id;
     }
-  
+
     const pipeline = [
       {
         $match: {
@@ -349,10 +235,10 @@ class ProductServices {
         },
       },
       {
-        $count: "total", 
+        $count: "total",
       },
     ];
-  
+
     const result = await databaseServices.products.aggregate(pipeline).toArray();
     if (result.length > 0) {
       return { total: result[0].total };

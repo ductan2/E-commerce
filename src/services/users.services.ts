@@ -11,7 +11,7 @@ import crypto from "crypto"
 import { CartType, Carts } from "~/models/carts.models";
 import { Order, OrderType } from "~/models/order.models";
 import uniqid from 'uniqid';
-import { ProductType } from "~/models/products.models";
+import Products, { ProductType } from "~/models/products.models";
 class UserServices {
   async register(payload: RegisterRequestBody) {
     const user_id = new ObjectId();
@@ -153,58 +153,99 @@ class UserServices {
     }
 
   }
-  async userCart(user_id: string, cart: any) {
-    let products = [];
+
+  async addCartByUserId(user_id: string, cart: any) {
     const user = await this.getUserById(user_id);
-    if (!user) throw new Error("User not found!")
-    await databaseServices.carts.findOneAndDelete({ orderby: user_id })
+    if (!user) throw new Error("User not found!");
+
     for (let item of cart) {
-      let object: any = {};
-      object.product = new ObjectId(item._id);
-      object.count = item.count;
-      object.color = item.color;
-      let getPrice = await databaseServices.products.find(
-        { _id: new ObjectId(item._id) },
-        { projection: { price: 1, _id: 0 } } // Chỉ lấy trường "price"
-      ).toArray();
-      object.price = Number(getPrice[0].price);
-      products.push(object)
-    }
-    let cartTotal = 0;
-    for (let item of products) {
-      cartTotal += item.count * item.price
-    }
-    await databaseServices.carts.insertOne(new Carts({
-      products:products, cartTotal, orderby: user_id
-    }))
-    return await databaseServices.carts.findOne({ orderby: user_id })
-  }
-  async getProduct(productUser: CartType): Promise<ProductOrder[]> {
-    const updatedProducts: ProductOrder[] = [];
-    for (const product of productUser.products) {
-      const foundProduct: WithId<ProductType> | null = await databaseServices.products.findOne({ _id: new ObjectId(product.product) }
-        , { projection: { quantity: 1, title: 1, _id: 1 } });
-      if (foundProduct) {
-        const updatedProduct = {
-          ...product,
-          product: foundProduct // Thay thế ID sản phẩm bằng dữ liệu sản phẩm
-        };
-        updatedProducts.push(updatedProduct);
+      const proc = await databaseServices.products.findOne({ _id: new ObjectId(item._id) });
+      if (!proc) {
+        throw new Error("Product not found!")
+      }
+      const colorProc = item.color;
+      const totalProc = item.count * proc.price!;
+      const amountProc = item.count;
+      const isExits = await databaseServices.carts.findOne({ orderby: user_id, product: proc._id, color: new ObjectId(colorProc) })
+      if (!isExits) {
+        // Cart doesn't exits products and color
+        await databaseServices.carts.insertOne(new Carts({
+          product: proc._id,
+          cartTotal: totalProc,
+          amount: amountProc,
+          color: new ObjectId(colorProc),
+          totalAfterDiscount: 0,
+          orderby: user_id
+        }));
+      }
+      else {
+        // Nếu sản phẩm đã tồn tại, chỉ cập nhật số lượng
+        await databaseServices.carts.updateOne({
+          orderby: user_id, product: new ObjectId(item._id), color: new ObjectId(colorProc)
+        }
+          , { $inc: { amount: amountProc, cartTotal: totalProc } })
       }
     }
-    return updatedProducts
+    return await databaseServices.carts.find({ orderby: user_id }).toArray();;
   }
   async getUserCart(user_id: string) {
-    const productUser = await databaseServices.carts.findOne({ orderby: user_id })
-    if (!productUser) throw new Error("Cart is empty!")
-    const updatedProducts = await this.getProduct(productUser);
-    return {
-      ...productUser,
-      products: updatedProducts
-    }
+    const carts = await databaseServices.carts.find({ orderby: user_id }).toArray();
+
+    if (!carts) throw new Error("Cart is empty!")
+    const pipeline = [
+      {
+        $lookup: {
+          from: "users",
+          localField: "orderby",
+          foreignField: "_id",
+          as: "orderby",
+        },
+      },
+      {
+        $unwind: "$orderby",
+      },
+      {
+        $addFields: {
+          orderby: "$orderby.email",
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "product",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      {
+        $unwind: "$product",
+      },
+      {
+        $lookup: {
+          from: "colors",
+          localField: "color",
+          foreignField: "_id",
+          as: "product.color",
+        },
+      },
+      {
+        $addFields: {
+          "product.color": {
+            $arrayElemAt: ["$product.color.title", 0],
+          },
+        },
+      },
+      {
+        $project: {
+          color: 0, // Loại bỏ trường "createdAt" khỏi kết quả
+        },
+      },
+    ]
+    return await databaseServices.carts.aggregate(pipeline).toArray();
+
   }
   async emptyCart(user_id: string) {
-    return await databaseServices.carts.deleteOne({ orderby: user_id })
+    return await databaseServices.carts.deleteMany({ orderby: user_id })
   }
   async applyCoupon(coupon: string, user_id: string) {
 
@@ -218,46 +259,73 @@ class UserServices {
     await databaseServices.carts.updateOne({ orderby: user_id }, { $set: { totalAfterDiscount: Number(totalAfterDiscount) } })
     return totalAfterDiscount
   }
-  async createOrder(user_id: string, COD: boolean, couponApplied: boolean) {
-    if (!COD) throw new Error("Create cash order failed!")
-    const userCart = await databaseServices.carts.findOne({ orderby: user_id })
-    if (!userCart) throw new Error("Cart not found!")
-    let finalAmount = couponApplied ? userCart.totalAfterDiscount : userCart.cartTotal;
-    await databaseServices.order.insertOne(new Order({
-      products: userCart.products, payment_intent: {
+  async createOrder(user_id: string, COD: boolean, couponApplied?: string) {
+    if (!COD) throw new Error("Create cash order failed!");
+
+    const cartArray = await databaseServices.carts.find({ orderby: user_id }).toArray();
+    if (!cartArray || cartArray.length === 0) throw new Error("Cart is empty!");
+
+    const totalBeforeDiscount = cartArray.reduce((acc, item) => acc + item.cartTotal, 0);
+
+    let finalPrice = totalBeforeDiscount;
+    if (couponApplied) {
+      const coupon = await databaseServices.coupons.findOne({ name: couponApplied?.toUpperCase() });
+      if (!coupon || (coupon && coupon?.expire_date < new Date())) {
+        throw new Error("Coupon is not found or expired!");
+      }
+      finalPrice = totalBeforeDiscount - (totalBeforeDiscount * (coupon.discount / 100));
+    }
+
+    const orderProducts = cartArray.map((item) => ({
+      product: item.product,
+      color: item.color,
+      count: item.amount,
+      price: item.cartTotal,
+    }));
+
+    const order = new Order({
+      products: orderProducts,
+      payment_intent: {
         id: uniqid(),
-        method: "COD",
-        amount: finalAmount,
-        status: statusOrder.CASH_ON_DELIVERY,
+        amount: finalPrice,
+        method: COD ? "COD" : "Credit card",
+        currency: "usd", // feature later
         created: new Date(),
-        currency: "usd",
-      }, order_status: statusOrder.CASH_ON_DELIVERY, orderby: user_id
-    }))
-    console.log("what failed 2")
-    let update = userCart.products.map((item) => ({
+      },
+      order_status: statusOrder.CASH_ON_DELIVERY,
+      orderby: new ObjectId(user_id),
+    });
+
+    await databaseServices.order.insertOne(order);
+
+    // update product quantity and sold
+    const updatePromises = cartArray.map((item) => ({
       updateOne: {
         filter: { _id: item.product },
-        update: { $inc: { quantity: -item.count, sold: +item.count } }
-      }
+        update: { $inc: { quantity: -item.amount, sold: +item.amount } },
+      },
     }));
-    const updated = await databaseServices.products.bulkWrite(update, {})
-    return updated
+
+    await databaseServices.products.bulkWrite(updatePromises, {});
+
+    return order;
   }
+
   async getOrder(user_id: string) {
-    const order = await databaseServices.order.findOne({ orderby: user_id });
-    if (!order) throw new Error("Order not found!")
-    const productUser = await databaseServices.carts.findOne({ orderby: user_id })
-    if (!productUser) throw new Error("Cart is empty!")
-    const updatedProducts = await this.getProduct(productUser);
-    return {
-      ...order,
-      products: updatedProducts
-    }
+    // const order = await databaseServices.order.findOne({ orderby: user_id });
+    // if (!order) throw new Error("Order not found!")
+    // const productUser = await databaseServices.carts.findOne({ orderby: user_id })
+    // if (!productUser) throw new Error("Cart is empty!")
+    // const updatedProducts = await this.getProduct(productUser);
+    // return {
+    //   ...order,
+    //   products: updatedProducts
+    // }
   }
   async updateOrderStatus(user_id: string, id_order: string, status: statusOrder): Promise<OrderType> {
     const updatedOrder = await databaseServices.order.findOneAndUpdate(
-      { _id: new ObjectId(id_order), orderby: user_id },
-      { $set: { order_status: status, payment_intent: { status: status } } },
+      { _id: new ObjectId(id_order), orderby: new ObjectId(user_id) },
+      { $set: { order_status: status, "payment_intent.status": { status } } },
       { returnDocument: "after" }
     );
 
