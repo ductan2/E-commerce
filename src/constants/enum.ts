@@ -10,7 +10,6 @@ export enum ErrorStatus {
 export enum statusOrder {
   CASH_ON_DELIVERY = "Cash on delivery",
   PROCESSING = "Processing",
-  DISPATCHED = "Dispatched",
   CANCELLED = "Cancelled",
   DELIVERED = "Delivered",
 }

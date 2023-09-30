@@ -164,53 +164,81 @@ class ProductServices {
       }
     }, { returnDocument: "after" })
   }
-  async getAllOrders() {
+  async getAllOrders(search: string) {
 
+    //6511672d1109dcb621f83d44
     const piper = [
+      {
+        $match: {
+
+        }
+      },
       {
         $lookup: {
           from: "users",
           localField: "orderby",
           foreignField: "_id",
-          as: "orderby"
-        }
+          as: "orderby",
+        },
       },
       {
-        $unwind: "$orderby"
+        $unwind: "$orderby",
       },
       {
         $addFields: {
-          orderby: "$orderby.email"
-        }
+          orderby: "$orderby.email",
+        },
       },
       {
-        $unwind: "$products"
+        $unwind: "$products",
       },
       {
         $lookup: {
           from: "products",
           localField: "products.product",
           foreignField: "_id",
-          as: "products"
-        }
+          as: "products.product",
+        },
       },
       {
-        $unwind: "$products"
+        $unwind: "$products.product",
+      },
+      {
+        $addFields: {
+          "products.product.color": "$products.color",
+        },
       },
       {
         $lookup: {
           from: "colors",
           localField: "products.color",
           foreignField: "_id",
-          as: "products.color"
-        }
+          as: "products.color",
+        },
       },
       {
         $addFields: {
-          "products.color": { $arrayElemAt: ["$products.color.title", 0] }
-        }
-      }
+          "products.product.color": {
+            $arrayElemAt: [
+              "$products.color.title",
+              0,
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          "products.color": 0,
+        },
+      },
     ]
+    if (search) {
+      piper.push({
+        $match: {
+          order_status: search
+        }
+      });
+    }
 
     const result = await databaseServices.order.aggregate(piper).toArray()
 

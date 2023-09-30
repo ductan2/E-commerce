@@ -44,7 +44,7 @@ router.post('/order/cash-order', authMiddlewares, createOrderController)
 
 router.get('/order/get-order', authMiddlewares, getOrderController)
 
-router.put('/order/update-status-order/:id', authMiddlewares, isAdmin,validate(StatusOrderValidator), updateOrderStatusController)
+router.put('/order/update-status-order/:cart_id', authMiddlewares, isAdmin,validate(StatusOrderValidator), updateOrderStatusController)
 
 router.delete("/cart/empty-cart", authMiddlewares, getEmptyCartController)
 

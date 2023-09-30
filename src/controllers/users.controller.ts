@@ -233,10 +233,10 @@ export const getOrderController = async (req: Request, res: Response) => {
 }
 export const updateOrderStatusController = async (req: Request, res: Response) => {
   try {
-    const { id: id_order } = req.params;
+    const { cart_id} = req.params;
     const { status } = req.body;
     const { _id: id_user } = req.user
-    const result = await userServices.updateOrderStatus(id_user, id_order, status)
+    const result = await userServices.updateOrderStatus(id_user, cart_id, status)
     return res.status(200).json({ message: "Update order status successfully", status: 200, result })
   } catch (error) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ message: "Update order status failed", status: ErrorStatus.BAD_REQUEST, error })

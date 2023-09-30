@@ -101,7 +101,8 @@ export const deleteImageController = async (req: Request, res: Response) => {
 }
 export const getAllOrdersController = async (req: Request, res: Response) => {
   try {
-    const result = await productServices.getAllOrders()
+    const {search}=req.query
+    const result = await productServices.getAllOrders(search as string)
     return res.status(200).json({ message: "Get all orders successfully", status: 200, result })
   } catch (error) {
     return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: "Get all orders failed", status: ErrorStatus.INTERNAL_SERVER })

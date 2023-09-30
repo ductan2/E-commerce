@@ -322,9 +322,12 @@ class UserServices {
     //   products: updatedProducts
     // }
   }
-  async updateOrderStatus(user_id: string, id_order: string, status: statusOrder): Promise<OrderType> {
+  async updateOrderStatus(user_id: string, idCart: string, status: statusOrder): Promise<OrderType> {
+
+
+
     const updatedOrder = await databaseServices.order.findOneAndUpdate(
-      { _id: new ObjectId(id_order), orderby: new ObjectId(user_id) },
+      { _id: new ObjectId(idCart), orderby: new ObjectId(user_id) },
       { $set: { order_status: status, "payment_intent.status": { status } } },
       { returnDocument: "after" }
     );
