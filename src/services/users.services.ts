@@ -75,6 +75,7 @@ class UserServices {
     return await databaseServices.users.updateOne({ _id: user._id }, { $set: { password: hassPassword(password), password_reset_token: "", password_reset_expires: undefined, updated_at: new Date() } })
   }
   async logout(refresh_token: string) {
+    console.log("🚀 ~ file: users.services.ts:78 ~ UserServices ~ logout ~ refresh_token:", refresh_token)
     if (!refresh_token) throw new Error("Refresh token not found!")
     return databaseServices.users.findOneAndUpdate({ refresh_token }, { $set: { refresh_token: "" } })
   }
@@ -147,11 +148,7 @@ class UserServices {
       return new ObjectId(item)
     });
     const wishlistProducts = await databaseServices.products.find({ _id: { $in: wishlistProductIds } }).toArray()
-    return {
-      ...user,
-      wishlist: wishlistProducts
-    }
-
+    return wishlistProducts
   }
 
   async addCartByUserId(user_id: string, cart: any) {
@@ -159,10 +156,15 @@ class UserServices {
     if (!user) throw new Error("User not found!");
 
     for (let item of cart) {
-      const proc = await databaseServices.products.findOne({ _id: new ObjectId(item._id) });
+      const proc = await databaseServices.products.findOne({
+        _id: new ObjectId(item._id),
+      })
       if (!proc) {
-        throw new Error("Product not found!")
+        throw new Error("Product not found !")
       }
+      if (proc.quantity && proc.quantity < item.count) throw new Error("Product is out of stock!")
+      const isColor = proc.color?.find((color) => color.toString() === item.color)
+      if (isColor == undefined) throw new Error("Color is invalid!")
       const colorProc = item.color;
       const totalProc = item.count * proc.price!;
       const amountProc = item.count;
@@ -193,6 +195,11 @@ class UserServices {
 
     if (!carts) throw new Error("Cart is empty!")
     const pipeline = [
+      {
+        $match: {
+          orderby: user_id,
+        },
+      },
       {
         $lookup: {
           from: "users",
@@ -259,11 +266,67 @@ class UserServices {
     await databaseServices.carts.updateOne({ orderby: user_id }, { $set: { totalAfterDiscount: Number(totalAfterDiscount) } })
     return totalAfterDiscount
   }
+  // async createOrder(user_id: string, COD: boolean, couponApplied?: string) {
+  //   if (!COD) throw new Error("Create cash order failed!");
+
+  //   const cartArray = await databaseServices.carts.find({ orderby: user_id }).toArray();
+  //   if (!cartArray || cartArray.length === 0) throw new Error("Cart is empty!");
+
+  //   const totalBeforeDiscount = cartArray.reduce((acc, item) => acc + item.cartTotal, 0);
+
+  //   let finalPrice = totalBeforeDiscount;
+  //   if (couponApplied) {
+  //     const coupon = await databaseServices.coupons.findOne({ name: couponApplied?.toUpperCase() });
+  //     if (!coupon || (coupon && coupon?.expire_date < new Date())) {
+  //       throw new Error("Coupon is not found or expired!");
+  //     }
+  //     finalPrice = totalBeforeDiscount - (totalBeforeDiscount * (coupon.discount / 100));
+  //   }
+  //   const orderProducts = cartArray.map((item) => ({
+  //     product: item.product,
+  //     color: item.color,
+  //     count: item.amount,
+  //     price: item.cartTotal,
+  //   }));
+
+  //   const order = new Order({
+  //     products: orderProducts,
+  //     payment_intent: {
+  //       id: uniqid(),
+  //       amount: finalPrice,
+  //       method: COD ? "COD" : "Credit card",
+  //       currency: "usd", // feature later
+  //       created: new Date(),
+  //     },
+  //     order_status: statusOrder.CASH_ON_DELIVERY,
+  //     orderby: new ObjectId(user_id),
+  //   });
+
+  //   await databaseServices.order.insertOne(order);
+
+  //   // update product quantity and sold
+  //   const updatePromises = cartArray.map((item) => ({
+  //     updateOne: {
+  //       filter: { _id: item.product },
+  //       update: { $inc: { quantity: -item.amount, sold: +item.amount } },
+  //     },
+  //   }));
+
+  //   await databaseServices.products.bulkWrite(updatePromises, {});
+
+  //   return order;
+  // }
+
   async createOrder(user_id: string, COD: boolean, couponApplied?: string) {
-    if (!COD) throw new Error("Create cash order failed!");
+
+    if (!COD) {
+      throw new Error("Create cash order failed!");
+    }
 
     const cartArray = await databaseServices.carts.find({ orderby: user_id }).toArray();
-    if (!cartArray || cartArray.length === 0) throw new Error("Cart is empty!");
+    if (!cartArray || cartArray.length === 0) {
+      throw new Error("Cart is empty!");
+    }
 
     const totalBeforeDiscount = cartArray.reduce((acc, item) => acc + item.cartTotal, 0);
 
@@ -276,12 +339,33 @@ class UserServices {
       finalPrice = totalBeforeDiscount - (totalBeforeDiscount * (coupon.discount / 100));
     }
 
-    const orderProducts = cartArray.map((item) => ({
-      product: item.product,
-      color: item.color,
-      count: item.amount,
-      price: item.cartTotal,
-    }));
+    const orderProducts = [];
+    const updatePromises = [];
+
+    for (const item of cartArray) {
+      const product = await databaseServices.products.findOne({ _id: item.product });
+      if (!product?.quantity) throw new Error("Product not found!");
+      if (product.quantity < item.amount) {
+        throw new Error(`Not enough quantity available for ${product.title}`);
+      }
+      const quantityToSubtract = Math.min(item.amount, product.quantity);
+
+      orderProducts.push({
+        product: item.product,
+        color: item.color,
+        count: quantityToSubtract,
+        price: item.cartTotal,
+      });
+
+      updatePromises.push({
+        updateOne: {
+          filter: { _id: product._id },
+          update: { $inc: { quantity: -quantityToSubtract, sold: +quantityToSubtract } },
+        },
+      });
+    }
+
+    await databaseServices.products.bulkWrite(updatePromises, {});
 
     const order = new Order({
       products: orderProducts,
@@ -298,34 +382,24 @@ class UserServices {
 
     await databaseServices.order.insertOne(order);
 
-    // update product quantity and sold
-    const updatePromises = cartArray.map((item) => ({
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: -item.amount, sold: +item.amount } },
-      },
-    }));
-
-    await databaseServices.products.bulkWrite(updatePromises, {});
-
     return order;
+
   }
 
-  async getOrder(user_id: string) {
-    // const order = await databaseServices.order.findOne({ orderby: user_id });
-    // if (!order) throw new Error("Order not found!")
-    // const productUser = await databaseServices.carts.findOne({ orderby: user_id })
-    // if (!productUser) throw new Error("Cart is empty!")
-    // const updatedProducts = await this.getProduct(productUser);
-    // return {
-    //   ...order,
-    //   products: updatedProducts
-    // }
+  async getOrder(user_id: string, order_id: string) {
+    return await databaseServices.order.findOne({ orderby: new ObjectId(user_id), _id: new ObjectId(order_id) })
+  }
+  async updateCartQuantity(amount: number, user_id: string, cart_id: string) {
+    const cart = await databaseServices.carts.findOne({ orderby: user_id, _id: new ObjectId(cart_id) })
+    if (!cart) throw new Error("Cart not found!")
+    const proc = await databaseServices.products.findOne({ _id: cart.product })
+    if (!proc) throw new Error("Product not found!")
+    return await databaseServices.carts.updateOne({ orderby: user_id, _id: new ObjectId(cart_id) }, { $set: { amount, cartTotal: amount * proc.price! } })
+  }
+  async deleteCart(user_id: string, cart_id: string) {
+    return await databaseServices.carts.deleteOne({ orderby: user_id, _id: new ObjectId(cart_id) })
   }
   async updateOrderStatus(user_id: string, idCart: string, status: statusOrder): Promise<OrderType> {
-
-
-
     const updatedOrder = await databaseServices.order.findOneAndUpdate(
       { _id: new ObjectId(idCart), orderby: new ObjectId(user_id) },
       { $set: { order_status: status, "payment_intent.status": { status } } },

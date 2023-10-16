@@ -14,7 +14,7 @@ class Blogs {
         this.dislikes = blog.dislikes || [];
         this.images = blog.images || "https://img.freepik.com/free-vector/blogging-fun-content-creation-online-streaming-video-blog-young-girl-making-selfie-social-network-sharing-feedback-self-promotion-strategy-vector-isolated-concept-metaphor-illustration_335657-855.jpg?w=2000";
         this.author = blog.author || "Admin";
-        this.craeted_at = blog.craeted_at || new Date();
+        this.created_at = blog.created_at || new Date();
         this.updated_at = blog.updated_at || new Date();
     }
 }

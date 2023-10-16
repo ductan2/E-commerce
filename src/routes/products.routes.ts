@@ -19,18 +19,22 @@ router.get("/get-all-products", getAllProductController)
 
 router.get('/count',getCountProductsController)
 
+router.put('/add-to-wishlist', authMiddlewares, validate(WishListValidator), addToWishListController)
+
+router.put('/rating', authMiddlewares, validate(RatingValidator), ratingController)
+
 router.get('/:id', getProductController)
 
 
 router.patch('/:id', validate(UpdateProductValidator), filterMiddleware<ProductType>(["brand", "category", "color", "trending", "featured",
-  "price", "description", "images", "quantity", "ratings", "slug", "sold", "title"]), updateProductController)
+  "price", "description", "images", "quantity", "ratings", "slug", "sold", "title","rating_distribution"]), updateProductController)
 
 router.delete('/:id', deleteProductController)
 
-router.put('/add-to-wishlist', authMiddlewares, validate(WishListValidator), addToWishListController)
 
 
-router.put('/rating', authMiddlewares, validate(RatingValidator), ratingController)
+
+
 
 
 

@@ -18,6 +18,17 @@ export class ProductAggregation {
     this.pipeline.push(matchStage);
     return this;
   }
+  getComment(){
+    this.pipeline.push({
+          $lookup: {
+            from: 'users', // Tên collection cần join
+            localField: 'ratings.postedBy',
+            foreignField: '_id',
+            as: 'userComment'
+          }
+    })
+    return this;
+  }
   matchById(id: string) {
     this.pipeline.push({
       '$match': {

@@ -1,0 +1,497 @@
+openapi: 3.0.3
+info:
+  title: Swagger Ecommerce - OpenAPI 3.0
+  description: |-
+    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
+    Swagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
+    You can now help us improve the API whether it's by making changes to the definition itself or to the code.
+    That way, with time, we can improve the API in general, and expose some of the new features in OAS3.
+
+    _If you're looking for the Swagger 2.0/OAS 2.0 version of Petstore, then click [here](https://editor.swagger.io/?url=https://petstore.swagger.io/v2/swagger.yaml). Alternatively, you can load via the `Edit > Load Petstore OAS 2.0` menu option!_
+    
+    Some useful links:
+    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
+    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: ndt11102003@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: http://localhost:4000
+    description: Development server
+  - url: https://ecommerce-market-api.vercel.app
+tags:
+  - name: users
+    description: Everything about user-related Api
+paths:  
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Login user 
+      operationId: login
+      requestBody:
+        description: Information login user 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successfully"
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    $ref: '#/components/schemas/ResponseLogin'
+        '400':
+          description: Login failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /users/register:
+    post: 
+      tags:
+        - users
+      summary: Register user 
+      operationId: register
+      requestBody:
+        description: Information register user 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterBody'
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Register successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Register successfully"
+                  status:
+                    type: number
+                    example: 201
+        '400':
+          description: Login failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+      security:
+        - user_auth:
+            - write:users
+            - read:users
+  /users/get-all-user:
+   get:
+      tags:
+        - users
+      summary: Get list of users
+      operationId: getUsers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '400':
+          description: Login failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /users/get-user/{id}:
+    get:
+      tags:
+        - users
+      summary: Get user by id
+      security:
+        - BearerAuth: []
+      operationId: getUserByid
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of user to return
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Get user by id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Login failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /users/update-password:
+     post:
+      tags:
+        - users
+      summary: Update password user 
+      operationId: Update password
+      requestBody:
+        description: Update password field
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePassword'
+              required:
+                - oldPassword
+                - newPassword
+                - confirmNewPassword
+      responses:
+        '200':
+          description: Update password successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Update password successfully"
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Update password failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /users/update-user:
+    patch:
+      tags:
+        - users
+      summary: Update user 
+      operationId: Update
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Update user 
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+
+      responses:
+        '200':
+          description: Update user successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: '#/components/schemas/ResponseSuccess'
+                  result:
+                    $ref: '#/components/schemas/User'
+                
+                  
+        '400':
+          description: Update user failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /users/forgot-password-token:
+    post:
+      tags:
+        - users
+      summary: Forgot password  
+      operationId: Forgotpassword 
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Check email to reset password
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "ndt11102003@gmail.com"
+
+      responses:
+        '200':
+          description: Forgot password successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forgot password successfully"
+                  status:
+                    type: number
+                    example: 200
+                  token:
+                    type: string
+                    example: "1a8ed018d9eff8dde837bbaf2392b2d243bd75a53af4263e208d2a35408fc61e"                 
+        '400':
+          description: Forgot password failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '404':
+          description: Email not found
+  /users/reset-password/{token}:
+    put:
+      tags:
+        - users
+      summary: Reset password
+      operationId: resetpassword
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: Token to reset password
+          schema:
+            type: string
+      requestBody:
+        description: Check email to get token
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: "password reset"
+                confirmPassword:
+                  type: string
+                  example: "password reset"
+      responses:
+        '200':
+          description: Reset password successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Reset password successfully"
+                  status:
+                    type: number
+                    example: 200
+        '400':
+          description: Forgot password failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /users/logout:
+    get:
+      tags:
+        - users
+      summary: Get list of users
+      operationId: getUsers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseSuccess'
+                  
+        '400':
+          description: Logout successfully failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+
+     
+components:
+  schemas:
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "ndt11102003@gmail.com"
+        password:
+          type: string
+          example: "Admin123"
+      xml:
+        name: LoginBody
+    ResponseLogin:
+        type: object
+        properties:
+          token: 
+            type: string 
+            example:  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZThiZDVhOTRhNTBjMDM4NDA2ZTcyZSIsImlhdCI6MTY5Njk4NzM5OSwiZXhwIjoxNjk3MDczNzk5fQ.UTsW2UTxFSW3SH_Ll3D5V3jheIeN26qahULnxomwoHk"
+          refresh_token:
+            type: string 
+            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ZThiZDVhOTRhNTBjMDM4NDA2ZTcyZSIsImlhdCI6MTY5Njk4NzM5OSwiZXhwIjoxNjk3MjQ2NTk5fQ.zd-9JiDdcCF7BFMRHtRFXR2Cklo7aKlyMd4CZ6lkm4g"
+    RegisterBody:
+      type: object
+      properties:
+        firstname:
+          type: string
+          example: "Đức"
+        lastname:
+          type: string
+          example: "Tân"
+        email:
+          type: string
+          format: email
+          example: "ndt111022005@gmail.com"
+        password:
+          type: string
+          example: "Admin123"
+        confirmPassword:
+          type: string
+          example: "Admin123"
+        mobile:
+          type: string
+          example: "39123198"
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "64e8bd5a94a50c038406e72e"
+        firstname:
+          type: string
+          example: "Nguyễn"
+        lastname:
+          type: string
+          example: "Tân"
+        email:
+          type: string
+          example: "ndt11102003@gmail.com"
+        mobile:
+          type: string
+          example: "39123198"
+        role:
+          type: string
+          example: "admin"
+          enum:
+            - admin
+            - user
+        address:
+          type: string
+          example: ""
+        blocked:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: "2023-08-25T14:40:26.960Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2023-08-30T14:50:50.860Z"
+        wishlist:
+          type: array
+          items:
+            type: string
+            format: ObjectId
+            example: "650596a4f95fbf111e2f1e3e"
+        avatar:
+          type: string
+          format: uri
+          example: "https://cdn-icons-png.flaticon.com/512/2304/2304226.png"
+    UpdatePassword:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+          example: "password old"
+        newPassword:
+          type: string
+          example: "Admin123"
+        confirmNewPassword:
+          type: string
+          example: "Admin123"
+    ResponseError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid value"
+        path:
+          type: string
+          example: "path field error"
+        status:
+          type: integer
+          example: 400
+    ResponseSuccess:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Field successfully"
+        status:
+          type: number
+          example: 200  
+    UpdateUser:
+      type: object
+      properties:
+        firstname:
+          type: string
+          example: "Nguyễn"
+        lastname:
+          type: string
+          example: "Tân"
+        address:
+          type: string
+          example: "Việt nam"
+        mobile:
+          type: string
+          example: "39123198"
+  securitySchemes:
+      BearerAuth:
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
+
+ 
+
+
+

@@ -7,19 +7,18 @@ export const authMiddlewares = async (req: Request, res: Response, next: NextFun
   if (req?.headers?.authorization && req.headers.authorization.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1]
     try {
-      if (token) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
-        const { id } = decoded as JwtPayload
-        const user = await databaseServices.users.findOne({ _id: new ObjectId(id) })
-        req.user = user
-        next()
-      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
+      const { id } = decoded as JwtPayload
+      const user = await databaseServices.users.findOne({ _id: new ObjectId(id) })
+      req.user = user
+      next()
+
     } catch (error) {
-      next(error)
+      return res.status(401).json({ message: "Token is invalid", status: 401 })
     }
   }
   else {
-    return next(new Error("Token not found"))
+    return res.status(401).json({ message: "Token is invalid", status: 401 })
   }
 }
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {

@@ -30,16 +30,6 @@ const confirmPasswordSchema: ParamSchema = {
       max: 25,
     }
   },
-  isStrongPassword: {
-    options: {
-      minLength: 6,
-      minLowercase: 1,
-      minNumbers: 1,
-      minUppercase: 1,
-      minSymbols: 0
-    },
-    errorMessage: "Password must be at least 6 characters long and contain at least one lowercase letter, one uppercase letter, one digit."
-  },
   custom: {
     options: ((value, { req }) => {
       if (value !== req.body.password) {

@@ -40,7 +40,18 @@ class ProductServices {
       .addCategoryField()
       .addBrandInfo()
       .execute(databaseServices.products);
-
+    const comments: []= result[0].ratings;
+    const userPostPromises = comments.map((item: any) => {
+      return databaseServices.users.findOne({ _id: new ObjectId(item.postedBy as string) }, { projection: { password: 0,refresh_token:0,role:0 } });
+    });
+    
+    const userPosts = await Promise.all(userPostPromises);
+    result[0].ratings = result[0].ratings.map((item: any, index: number) => {
+      return {
+        ...item,
+        postedBy: userPosts[index],
+      };
+    });
     return result;
   }
   async getColors(colors: { color: string }[]) {
@@ -115,10 +126,10 @@ class ProductServices {
     if (existingRating) {
       await databaseServices.products.findOneAndUpdate(
         {
-          ratings: { $elemMatch: existingRating } // $elemMatch: Matches documents that contain an array field with at least one element that matches all the specified query criteria.
+          ratings: { $elemMatch: existingRating }
         },
         {
-          $set: { "ratings.$.star": star, "ratings.$.comment": comment } // $ is the first position of the element in the array that matches the query condition.
+          $set: { "ratings.$.star": star, "ratings.$.comment": comment,"ratings.$.posted_at":new Date() }
         }, { returnDocument: "after" })
     }
     else {
@@ -127,6 +138,7 @@ class ProductServices {
           ratings: {
             star,
             comment,
+            posted_at: new Date(),
             postedBy: user_id
           }
         }

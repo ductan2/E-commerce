@@ -64,6 +64,7 @@ export interface RatingType {
   star: number
   comment: string
   postedBy: string
+  posted_at: Date
 }
 export interface imageUrl {
   url: string

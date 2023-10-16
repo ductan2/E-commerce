@@ -162,8 +162,6 @@ export const RatingValidator = checkSchema({
   },
   star: {
     notEmpty: true,
-    isNumeric: true,
-    errorMessage: "Star must be a number",
     isIn: { options: [[1, 2, 3, 4, 5]], errorMessage: "Star is invalid!" }
   },
   comment: {

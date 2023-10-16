@@ -19,7 +19,7 @@ class Products {
         this.color = product.color?.map((item) => new mongodb_1.ObjectId(item)) || [];
         this.rating_distribution = product.rating_distribution || 5;
         this.ratings = product.ratings || [];
-        this.craeted_at = product.craeted_at || date;
+        this.created_at = product.created_at || date;
         this.updated_at = product.updated_at || date;
     }
 }

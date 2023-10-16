@@ -19,7 +19,7 @@ export interface ProductType {
   color?: ObjectId[]
   ratings?: RatingType[]
   rating_distribution?: number
-  craeted_at?: Date
+  created_at?: Date
   updated_at?: Date
 }
 export default class Products {
@@ -38,7 +38,7 @@ export default class Products {
   color?: ObjectId[]
   ratings?: RatingType[]
   rating_distribution?: number
-  craeted_at?: Date
+  created_at?: Date
   updated_at?: Date
   constructor(product: ProductType) {
     const date = new Date();
@@ -57,7 +57,7 @@ export default class Products {
     this.color = product.color?.map((item) => new ObjectId(item)) || []
     this.rating_distribution = product.rating_distribution || 5
     this.ratings = product.ratings || []
-    this.craeted_at = product.craeted_at || date
+    this.created_at = product.created_at || date
     this.updated_at = product.updated_at || date
   }
 }
