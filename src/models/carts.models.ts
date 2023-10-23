@@ -9,6 +9,7 @@ export interface CartType {
   totalAfterDiscount: number
   amount:number
   color:ObjectId
+  coupon?:string
   orderby: string// ref user
   created_at?: Date
   updated_at?: Date
@@ -20,6 +21,7 @@ export class Carts {
   totalAfterDiscount: number
   amount:number
   color:ObjectId
+  coupon?:string
   orderby: string// ref user
   created_at?: Date
   updated_at?: Date
@@ -29,6 +31,7 @@ export class Carts {
     this.cartTotal = cart.cartTotal || 0
     this.amount = cart.amount || 0
     this.color = cart.color 
+    this.coupon = cart.coupon
     this.totalAfterDiscount = cart.totalAfterDiscount 
     this.orderby = cart.orderby || ""
     this.created_at = cart.created_at || new Date()

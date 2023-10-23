@@ -40,6 +40,15 @@ export const loginAdminController: RequestHandler<{}, {}, LoginRequestBody> = as
   }
 }
 
+export const getInfoTokenController = async (req: Request, res: Response) => {
+  try {
+    const { _id } = req.user
+    const result = await userServices.getInfoByToken(_id)
+    return res.status(200).json({ message: "Get info token successfully", status: 200, result })
+  } catch (error:any) {
+    return res.status(ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Login failed", status: error.status || ErrorStatus.INTERNAL_SERVER })
+  }
+}
 export const forgotPasswordTokenController: RequestHandler = async (req, res) => {
   try {
     const { email } = req.body
@@ -223,13 +232,22 @@ export const deleteCartController = async (req: Request, res: Response) => {
   }
 }
 export const createOrderController = async (req: Request, res: Response) => {
-  const { COD, couponApplied } = req.body
+  const { COD, couponApplied, payment_id } = req.body
   try {
     const { _id } = req.user;
-    const result = await userServices.createOrder(_id, COD, couponApplied)
+    const result = await userServices.createOrder(_id, COD, couponApplied, payment_id)
     return res.status(200).json({ message: "Create order successfully", status: 200, result })
   } catch (error: any) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ error: error.message || "Create order failed", status: ErrorStatus.BAD_REQUEST })
+  }
+}
+export const getOrderByUserController = async (req: Request, res: Response) => {
+  try {
+    const { _id } = req.user;
+    const result = await userServices.getOrderByUser(_id)
+    return res.status(200).json({ message: "Get order successfully", status: 200, result })
+  } catch (error: any) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get order failed", status: ErrorStatus.BAD_REQUEST })
   }
 }
 export const getOrderController = async (req: Request, res: Response) => {
@@ -247,7 +265,7 @@ export const updateCartQuantityController = async (req: Request, res: Response) 
     const { cart_id } = req.params;
     const { _id: user_id } = req.user;
     const { amount } = req.body;
-    const result= await userServices.updateCartQuantity(amount, user_id, cart_id)
+    const result = await userServices.updateCartQuantity(amount, user_id, cart_id)
     return res.status(200).json({ message: "Update cart successfully", status: 200, result })
   } catch (error: any) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ error: error.message || "Update cart failed", status: ErrorStatus.BAD_REQUEST })

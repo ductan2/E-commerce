@@ -9,6 +9,7 @@ import couponsRouter from "./coupons.routes"
 import colorsRouter from "./colors.routes"
 import contactRouter from "./contact.routes"
 import uploadRouter from "./upload.routes"
+import paymentRouter from "./payment.routes"
 const router = express.Router();
 
 
@@ -16,11 +17,12 @@ const router = express.Router();
 router.use('/users', usersRouter)
 router.use('/products', productsRouter)
 router.use('/blogs', blogsRouter)
-router.use('/procduct-categorys', productCategoysRouter)
+router.use('/product-categorys', productCategoysRouter)
 router.use('/blog-categorys', blogCategorysRouter)
 router.use('/brands', brandsRouter)
 router.use('/coupons', couponsRouter)
 router.use("/colors", colorsRouter)
+router.use("/payment",paymentRouter )
 router.use("/contact", contactRouter)
 router.use('/uploads',uploadRouter)
 export default router;

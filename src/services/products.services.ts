@@ -40,11 +40,11 @@ class ProductServices {
       .addCategoryField()
       .addBrandInfo()
       .execute(databaseServices.products);
-    const comments: []= result[0].ratings;
+    const comments: [] = result[0].ratings;
     const userPostPromises = comments.map((item: any) => {
-      return databaseServices.users.findOne({ _id: new ObjectId(item.postedBy as string) }, { projection: { password: 0,refresh_token:0,role:0 } });
+      return databaseServices.users.findOne({ _id: new ObjectId(item.postedBy as string) }, { projection: { password: 0, refresh_token: 0, role: 0 } });
     });
-    
+
     const userPosts = await Promise.all(userPostPromises);
     result[0].ratings = result[0].ratings.map((item: any, index: number) => {
       return {
@@ -72,7 +72,7 @@ class ProductServices {
       .lookupCategory()
       .addCategoryField()
       .addBrandInfo()
-      .sortObject(queryObj.sort ? { [queryObj.sort]: queryObj.sort === 'desc' ? -1 : 1 } : { created_at: 1 })
+      .sortObject(queryObj.sort || { created_at: -1 })
       .skip(queryObj.page && queryObj.page > 0 ? (queryObj.page - 1) * (queryObj.limit || 10) : 0)
       .limit(queryObj.limit ? Number(queryObj.limit) : 10)
       .execute(databaseServices.products);
@@ -129,7 +129,7 @@ class ProductServices {
           ratings: { $elemMatch: existingRating }
         },
         {
-          $set: { "ratings.$.star": star, "ratings.$.comment": comment,"ratings.$.posted_at":new Date() }
+          $set: { "ratings.$.star": star, "ratings.$.comment": comment, "ratings.$.posted_at": new Date() }
         }, { returnDocument: "after" })
     }
     else {
@@ -151,7 +151,7 @@ class ProductServices {
     const sumRating = productAllRating?.ratings?.reduce((prev, item) => prev + item.star, 0)
     return await databaseServices.products.findOneAndUpdate({ _id: new ObjectId(product_id) }, {
       $set: {
-        rating_distribution: Math.round(Number(sumRating) / Number(lengthRatingProc))
+        rating_distribution: (Number(sumRating) / Number(lengthRatingProc))
       }
     })
   }
@@ -270,7 +270,7 @@ class ProductServices {
           $and: [
             queryObj.title ? { title: { $regex: new RegExp(queryObj.title, 'i') } } : {},
             queryObj.brand ? { brand: brandId } : {},
-            { price: { $gte: queryObj.minPrice || 0, $lte: queryObj.maxPrice || Number.MAX_VALUE } },
+            { price: { $gte: Number(queryObj.minPrice) || 0, $lte: Number(queryObj.maxPrice) || Number.MAX_VALUE } },
           ],
         },
       },

@@ -2,7 +2,7 @@ import express from "express"
 import { UpdateInfo } from "~/constants/type";
 import {
   applyCouponController,
-  blockUserController, createOrderController, deleteUserController, forgotPasswordTokenController, getAllUserController, getEmptyCartController, getOrderController, getUserCartController, getUserController, getWishListController, loginAdminController, loginController, logoutController,
+  blockUserController, createOrderController, deleteUserController, forgotPasswordTokenController, getAllUserController, getEmptyCartController, getInfoTokenController, getOrderByUserController, getOrderController, getUserCartController, getUserController, getWishListController, loginAdminController, loginController, logoutController,
   refreshTokenController, registerController, resetPasswordController, unBlockUserController, updateCartQuantityController, updateOrderStatusController, updatePasswordController, updateUserController, userAddCartController
 } from "~/controllers/users.controller";
 import { authMiddlewares, isAdmin } from "~/middlewares/auth.middlewares";
@@ -20,11 +20,14 @@ router.post("/login", validate(LoginValidator), loginController)
 
 router.post('/login-admin', loginAdminController)
 
+router.get("/info",authMiddlewares,getInfoTokenController)
+
 router.get("/refresh-token", refreshTokenController)
 
 router.get("/logout", logoutController)
 
 router.post("/forgot-password-token", forgotPasswordTokenController)
+
 
 router.get("/reset-password/:token", (req, res) => {
   res.send("Page reset password")
@@ -40,11 +43,15 @@ router.get('/wishlist', authMiddlewares, getWishListController)
 
 router.post('/cart', authMiddlewares, userAddCartController)
 
+router.patch("/apply-coupon", authMiddlewares, applyCouponController)
+
 router.get('/cart/get-cart', authMiddlewares, getUserCartController)
 
 router.delete('/cart/delete-cart/:cart_id', authMiddlewares, deleteCartController)
 
 router.post('/order/cash-order', authMiddlewares, createOrderController)
+
+router.get('/order/get-order', authMiddlewares, getOrderByUserController)
 
 router.get('/order/get-order/:order_id', authMiddlewares, getOrderController)
 
@@ -60,7 +67,6 @@ router.put("/reset-password/:token", validate(ForgotPasswordValidator), resetPas
 
 router.get("/get-user/:id", authMiddlewares, isAdmin, getUserController)
 
-router.patch("/apply-coupon", authMiddlewares, applyCouponController)
 
 router.put('/block-user/:id', authMiddlewares, isAdmin, blockUserController)
 

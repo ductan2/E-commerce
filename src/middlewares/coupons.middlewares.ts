@@ -17,7 +17,8 @@ export const CouponsValidator = checkSchema({
       options: async (value: string) => {
         const nameCoupon = value.toUpperCase()
         const isExist = await databaseServices.coupons.findOne({ name: nameCoupon })
-        if (isExist) throw new Error("Coupon is exist")
+        const now = new Date()
+        if (isExist?.name && isExist.expire_date <=now) throw new Error("Coupon is exist")
       }
     }
   },

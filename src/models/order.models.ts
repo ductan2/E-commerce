@@ -13,6 +13,7 @@ type PaymentIntentType={
   amount?:number
   created?:Date
   currency?:string
+  couponApplied?:boolean
 }
 
 export interface OrderType {
@@ -21,6 +22,7 @@ export interface OrderType {
   payment_intent?: PaymentIntentType
   order_status?: statusOrder
   orderby?: ObjectId// ref user
+  payment_id?:string
   created_at?: Date
   updated_at?: Date
 }
@@ -31,6 +33,7 @@ export class Order {
   payment_intent?: PaymentIntentType
   order_status?: statusOrder
   orderby?: ObjectId// ref user
+  payment_id?:string
   created_at?: Date
   updated_at?: Date
   constructor(order: OrderType) {
@@ -39,6 +42,7 @@ export class Order {
     this.payment_intent = order.payment_intent || {}
     this.order_status = order.order_status || statusOrder.CASH_ON_DELIVERY
     this.orderby = order.orderby
+    this.payment_id=order.payment_id 
     this.created_at = order.created_at || new Date()
     this.updated_at = order.updated_at || new Date()
   }

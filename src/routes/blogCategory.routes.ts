@@ -2,6 +2,7 @@
 import express from "express"
 import { checkSchema } from "express-validator"
 import { createBlogCategoryController, deleteBlogCategoryController, getAllBlogCategoryController, getBlogCategoryController, updateBlogCategoryController } from "~/controllers/blogCategorys.controller"
+import { authMiddlewares, isAdmin } from "~/middlewares/auth.middlewares"
 import databaseServices from "~/services/database.services"
 import { validate } from "~/utils/validate"
 
@@ -29,13 +30,13 @@ const blogCategorySchema = checkSchema({
 }, ["body"])
 
 
-router.post("/", validate(blogCategorySchema), createBlogCategoryController)
+router.post("/",authMiddlewares,isAdmin,validate(blogCategorySchema), createBlogCategoryController)
 
-router.put("/:id", validate(blogCategorySchema), updateBlogCategoryController)
+router.put("/:id", authMiddlewares,isAdmin,validate(blogCategorySchema), updateBlogCategoryController)
 
-router.delete("/:id", deleteBlogCategoryController)
+router.delete("/:id", authMiddlewares,isAdmin,deleteBlogCategoryController)
 
-router.get("/get-all", getAllBlogCategoryController)
+router.get("/get-all",getAllBlogCategoryController)
 
 router.get("/:id", getBlogCategoryController)
 

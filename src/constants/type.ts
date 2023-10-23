@@ -19,6 +19,7 @@ export interface ProductQuery {
   title?: string | RegExp;
   brand?: string | RegExp;
   category?: string | RegExp;
+  trending?: boolean;
   minPrice?: number;
   maxPrice?: number;
   sort?: string;

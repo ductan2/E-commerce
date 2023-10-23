@@ -343,6 +343,746 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseError'
+  /users/block-user/{id}:
+     put:
+      tags:
+        - users
+      summary: Block user 
+      operationId: Block user by id
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of user to return
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Block user successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Block user failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /users/unblock-user/{id}:
+     put:
+      tags:
+        - users
+      summary: Unblock user 
+      operationId: Unblock user by id
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of user to return
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Unblock user successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Block user failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /blog-categorys:
+     post:
+      tags:
+        - Blog categorys
+      summary: Create blog category 
+      operationId: Createblogcategory 
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Create blog category
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Title for blog category"
+      responses:
+        '200':
+          description: Create blog category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Create blog category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /blog-categorys/{id}:
+     parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of category blog 
+          schema:
+            type: string
+     delete:
+      tags:
+        - Blog categorys
+      summary: delete blog category 
+      operationId: deleteblogcategory 
+      security:
+        - BearerAuth: []
+     
+      responses:
+        '200':
+          description: Delete blog category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Delete blog category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+     get:
+      tags:
+        - Blog categorys
+      summary: Get blog category 
+      operationId: getblogCategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get blog category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Get blog category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+     put:
+      tags:
+        - Blog categorys
+      summary: Update blog category 
+      operationId: updateblogCategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Update blog category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Update blog category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /blog-categorys/get-all:
+     get:
+      tags:
+        - Blog categorys
+      summary: Get all blog category 
+      operationId: getallblogcategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get all blog category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Get all blog category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /product-categorys:
+     post:
+      tags:
+        - Product categorys
+      summary: Create product category 
+      operationId: Createbproductcategory 
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Create product category
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Title for product category"
+      responses:
+        '200':
+          description: Create product category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Create product category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /product-categorys/{id}:
+     parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of category product 
+          schema:
+            type: string
+     delete:
+      tags:
+        - Product categorys
+      summary: delete product category 
+      operationId: deleteproductcategory 
+      security:
+        - BearerAuth: []
+     
+      responses:
+        '200':
+          description: Delete product category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Delete product category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+     get:
+      tags:
+        - Product categorys
+      summary: Get product category 
+      operationId: getproductCategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get product category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Get product category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+     put:
+      tags:
+        - Product categorys
+      summary: Update product category 
+      operationId: updateproductCategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Update product category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Update product category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /product-categorys/get-all:
+     get:
+      tags:
+        - Product categorys
+      summary: Get all product category 
+      operationId: getallproductcategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get all product category successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Get all product category failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /colors:
+     post:
+      tags:
+        - Color 
+      summary: Create color  
+      operationId: Createbcolor 
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Create color 
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Title for color "
+      responses:
+        '200':
+          description: Create color  successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Create color  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /colors/{id}:
+     parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of  color 
+          schema:
+            type: string
+     delete:
+      tags:
+        - Color 
+      summary: delete color  
+      operationId: deletecolor 
+      security:
+        - BearerAuth: []
+     
+      responses:
+        '200':
+          description: Delete color  successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Delete color  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+     get:
+      tags:
+        - Color 
+      summary: Get color  
+      operationId: getcolorCategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get color  successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Get color  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+     put:
+      tags:
+        - Color 
+      summary: Update color  
+      operationId: updatecolorCategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Update color  successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Update color  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /colors/get-all:
+     get:
+      tags:
+        - Color 
+      summary: Get all color  
+      operationId: getallcolor 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get all color  successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Get all color  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /brands:
+     post:
+      tags:
+        - Brand 
+      summary: Create brand  
+      operationId: Createbbrand 
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Create brand 
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Title for brand"
+      responses:
+        '200':
+          description: Create brand successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Create brand  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /brands/{id}:
+     parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of  brand 
+          schema:
+            type: string
+     delete:
+      tags:
+        - Brand 
+      summary: delete brand  
+      operationId: deletebrand 
+      security:
+        - BearerAuth: []
+     
+      responses:
+        '200':
+          description: Delete brand  successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Delete brand  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+     get:
+      tags:
+        - Brand 
+      summary: Get brand  
+      operationId: getbrandCategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get brand  successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Get brand  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+     put:
+      tags:
+        - Brand 
+      summary: Update brand  
+      operationId: updatebrandCategory 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Update brand  successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Update brand  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /brands/get-all:
+     get:
+      tags:
+        - Brand 
+      summary: Get all brand  
+      operationId: getallbrand 
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Get all brand  successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Get all brand  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+  /brands/upload/{id}:
+     put:
+      tags:
+        - Brand 
+      summary: Upload brand  
+      operationId: Uploadbrand 
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of brand 
+          schema:
+            type: string
+      requestBody:
+        description: Upload brand 
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        '200':
+          description: Upload brand successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: number
+                    example: 200
+                  
+        '400':
+          description: Create brand  failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
 
      
 components:

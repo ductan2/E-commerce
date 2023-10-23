@@ -260,36 +260,18 @@ class UserServices {
 
     if (couponItem === null) throw new Error("Coupon not found!")
 
+    let cartWithCoupon = await databaseServices.carts.findOne({ orderby: user_id, coupon })
+    if (cartWithCoupon) throw new Error("Coupon already applied!")
     let cart = await databaseServices.carts.findOne({ orderby: user_id })
     if (!cart) throw new Error("Cart not found!")
-    const totalAfterDiscount = ((cart.cartTotal * (100 - couponItem.discount)) / 100).toFixed(2)
-    await databaseServices.carts.updateOne({ orderby: user_id }, { $set: { totalAfterDiscount: Number(totalAfterDiscount) } })
+
+
+    let totalAfterDiscount = ((cart.cartTotal - couponItem.discount)) > 0 ? ((cart.cartTotal - couponItem.discount)).toFixed(2) : 1
+    await databaseServices.carts.updateOne({ orderby: user_id }, { $set: { totalAfterDiscount: Number(totalAfterDiscount), coupon } })
     return totalAfterDiscount
   }
   // async createOrder(user_id: string, COD: boolean, couponApplied?: string) {
-  //   if (!COD) throw new Error("Create cash order failed!");
-
-  //   const cartArray = await databaseServices.carts.find({ orderby: user_id }).toArray();
-  //   if (!cartArray || cartArray.length === 0) throw new Error("Cart is empty!");
-
-  //   const totalBeforeDiscount = cartArray.reduce((acc, item) => acc + item.cartTotal, 0);
-
-  //   let finalPrice = totalBeforeDiscount;
-  //   if (couponApplied) {
-  //     const coupon = await databaseServices.coupons.findOne({ name: couponApplied?.toUpperCase() });
-  //     if (!coupon || (coupon && coupon?.expire_date < new Date())) {
-  //       throw new Error("Coupon is not found or expired!");
-  //     }
-  //     finalPrice = totalBeforeDiscount - (totalBeforeDiscount * (coupon.discount / 100));
-  //   }
-  //   const orderProducts = cartArray.map((item) => ({
-  //     product: item.product,
-  //     color: item.color,
-  //     count: item.amount,
-  //     price: item.cartTotal,
-  //   }));
-
-  //   const order = new Order({
+  //   if (!COD) throw new Error("Create   //   const order = new Order({
   //     products: orderProducts,
   //     payment_intent: {
   //       id: uniqid(),
@@ -317,9 +299,9 @@ class UserServices {
   //   return order;
   // }
 
-  async createOrder(user_id: string, COD: boolean, couponApplied?: string) {
+  async createOrder(user_id: string, COD: boolean, couponApplied?: string, payment_id?: string) {
 
-    if (!COD) {
+    if (!COD && !payment_id) {
       throw new Error("Create cash order failed!");
     }
 
@@ -336,7 +318,7 @@ class UserServices {
       if (!coupon || (coupon && coupon?.expire_date < new Date())) {
         throw new Error("Coupon is not found or expired!");
       }
-      finalPrice = totalBeforeDiscount - (totalBeforeDiscount * (coupon.discount / 100));
+      finalPrice = totalBeforeDiscount - coupon.discount > 0 ? totalBeforeDiscount - coupon.discount : 1;
     }
 
     const orderProducts = [];
@@ -375,11 +357,13 @@ class UserServices {
         method: COD ? "COD" : "Credit card",
         currency: "usd", // feature later
         created: new Date(),
+        couponApplied: couponApplied !== "" ? true : false,
       },
       order_status: statusOrder.CASH_ON_DELIVERY,
+      payment_id: payment_id,
       orderby: new ObjectId(user_id),
     });
-
+    await databaseServices.carts.deleteMany({ orderby: user_id });
     await databaseServices.order.insertOne(order);
 
     return order;
@@ -411,6 +395,12 @@ class UserServices {
     } else {
       throw new Error("Order not found or update failed");
     }
+  }
+  async getOrderByUser(id: string) {
+    return await databaseServices.order.find({ orderby: new ObjectId(id) }).toArray()
+  }
+  async getInfoByToken(id: string) {
+    return await databaseServices.users.findOne({ _id: new ObjectId(id) })
   }
 }
 export const userServices = new UserServices()
