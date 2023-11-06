@@ -21,7 +21,7 @@ class ProcCategorysServices {
             }
         }, { returnDocument: "after" });
         if (result.value === null)
-            throw new type_1.ErrroWithStatus({ message: "BlogCategory does not exits!", status: 404 });
+            throw new type_1.ErrorWithStatus({ message: "BlogCategory does not exits!", status: 404 });
         return result;
     }
     async deleteProcCategory(id) {

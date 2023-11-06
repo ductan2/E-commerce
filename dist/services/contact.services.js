@@ -22,7 +22,7 @@ class ContactServices {
         }, { returnDocument: "after" });
         console.log("🚀 ~ file: contact.services.ts:19 ~ ContactServices ~ updateContact ~ result:", result);
         if (result.value === null)
-            throw new type_1.ErrroWithStatus({ message: "Contact does not exits!", status: 404 });
+            throw new type_1.ErrorWithStatus({ message: "Contact does not exits!", status: 404 });
         return result;
     }
     async deleteContact(id) {

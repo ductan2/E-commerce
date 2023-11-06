@@ -1,6 +1,6 @@
 import { checkSchema } from "express-validator";
 import { ObjectId } from "mongodb";
-import { ErrroWithStatus } from "~/constants/type";
+import { ErrorWithStatus } from "~/constants/type";
 import databaseServices from "~/services/database.services";
 
 
@@ -10,8 +10,8 @@ export const ProductsValidator = checkSchema({
     trim: true,
     isLength: {
       options: {
-        min: 2,
-        max: 50,
+        min: 1,
+        max: 100,
       },
       errorMessage: "Title must be at least 2 characters long and less than 25 characters long."
     },
@@ -21,8 +21,8 @@ export const ProductsValidator = checkSchema({
     trim: true,
     isLength: {
       options: {
-        min: 2,
-        max: 50,
+        min: 1,
+        max: 100,
       },
       errorMessage: "Slug must be at least 2 characters long and less than 25 characters long."
     },
@@ -33,7 +33,7 @@ export const ProductsValidator = checkSchema({
     isLength: {
       options: {
         min: 2,
-        max: 500,
+        max: 10000,
       },
       errorMessage: "Description must be at least 2 characters long and less than 25 characters long."
     },
@@ -51,7 +51,7 @@ export const ProductsValidator = checkSchema({
       options: async (value) => {
         const ids = value.map((item: string) => new ObjectId(item))
         const isProc = await databaseServices.productCategorys.find({ _id: { $in: ids } }).toArray()
-        if (isProc.length !== value.length) throw new ErrroWithStatus({ message: "Category is not exist", status: 404 })
+        if (isProc.length !== value.length) throw new ErrorWithStatus({ message: "Category is not exist", status: 404 })
         return true;
       }
     }
@@ -61,8 +61,8 @@ export const ProductsValidator = checkSchema({
     custom: {
       options: async (value) => {
         const isBrand = await databaseServices.brands.findOne({ _id: new ObjectId(value) })
-        if(!isBrand) throw new ErrroWithStatus({ message: "Brand is not exist", status: 404 })
-        return true; 
+        if (!isBrand) throw new ErrorWithStatus({ message: "Brand is not exist", status: 404 })
+        return true;
       }
     }
   },
@@ -77,8 +77,8 @@ export const UpdateProductValidator = checkSchema({
     optional: true,
     isLength: {
       options: {
-        min: 2,
-        max: 50,
+        min: 1,
+        max: 100,
       },
       errorMessage: "Title must be at least 2 characters long and less than 25 characters long."
     },
@@ -88,8 +88,8 @@ export const UpdateProductValidator = checkSchema({
     optional: true,
     isLength: {
       options: {
-        min: 2,
-        max: 50,
+        min: 1,
+        max: 100,
       },
       errorMessage: "Slug must be at least 2 characters long and less than 25 characters long."
     },
@@ -99,8 +99,8 @@ export const UpdateProductValidator = checkSchema({
     optional: true,
     isLength: {
       options: {
-        min: 2,
-        max: 500,
+        min: 1,
+        max: 10000,
       },
       errorMessage: "Description must be at least 2 characters long and less than 25 characters long."
     },
@@ -111,22 +111,25 @@ export const UpdateProductValidator = checkSchema({
     errorMessage: "Price must be a number"
   },
   category: {
-    optional: true,
-    isLength: {
-      options: {
-        min: 2,
-        max: 50,
-      },
-      errorMessage: "Category must be at least 2 characters long and less than 25 characters long."
-    },
+    notEmpty: true,
+    isArray: true,
+    errorMessage: "Category must be an array objectId",
+    custom: {
+      options: async (value) => {
+        const ids = value.map((item: string) => new ObjectId(item))
+        const isProc = await databaseServices.productCategorys.find({ _id: { $in: ids } }).toArray()
+        if (isProc.length !== value.length) throw new ErrorWithStatus({ message: "Category is not exist", status: 404 })
+        return true;
+      }
+    }
   },
   brand: {
     optional: true,
     custom: {
       options: async (value) => {
         const isBrand = await databaseServices.brands.findOne({ _id: new ObjectId(value) })
-        if(!isBrand) throw new ErrroWithStatus({ message: "Brand is not exist", status: 404 })
-        return true; 
+        if (!isBrand) throw new ErrorWithStatus({ message: "Brand is not exist", status: 404 })
+        return true;
       }
     }
   },
@@ -143,7 +146,7 @@ export const WishListValidator = checkSchema({
     custom: {
       options: async (value) => {
         const isProc = await databaseServices.products.findOne({ _id: new ObjectId(value) })
-        if (!isProc) throw new ErrroWithStatus({ message: "Product is not exist", status: 404 })
+        if (!isProc) throw new ErrorWithStatus({ message: "Product is not exist", status: 404 })
       }
     }
   },
@@ -156,7 +159,7 @@ export const RatingValidator = checkSchema({
     custom: {
       options: async (value) => {
         const isProc = await databaseServices.products.findOne({ _id: new ObjectId(value) })
-        if (!isProc) throw new ErrroWithStatus({ message: "Product is not exist", status: 404 })
+        if (!isProc) throw new ErrorWithStatus({ message: "Product is not exist", status: 404 })
       }
     }
   },
@@ -167,12 +170,5 @@ export const RatingValidator = checkSchema({
   comment: {
     optional: true,
     trim: true,
-    isLength: {
-      options: {
-        min: 2,
-        max: 500,
-      },
-      errorMessage: "Comment must be at least 2 characters long and less than 500 characters long."
-    },
   }
 }, ["body"])

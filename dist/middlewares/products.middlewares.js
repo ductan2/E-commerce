@@ -56,7 +56,7 @@ exports.ProductsValidator = (0, express_validator_1.checkSchema)({
                 const ids = value.map((item) => new mongodb_1.ObjectId(item));
                 const isProc = await database_services_1.default.productCategorys.find({ _id: { $in: ids } }).toArray();
                 if (isProc.length !== value.length)
-                    throw new type_1.ErrroWithStatus({ message: "Category is not exist", status: 404 });
+                    throw new type_1.ErrorWithStatus({ message: "Category is not exist", status: 404 });
                 return true;
             }
         }
@@ -67,7 +67,7 @@ exports.ProductsValidator = (0, express_validator_1.checkSchema)({
             options: async (value) => {
                 const isBrand = await database_services_1.default.brands.findOne({ _id: new mongodb_1.ObjectId(value) });
                 if (!isBrand)
-                    throw new type_1.ErrroWithStatus({ message: "Brand is not exist", status: 404 });
+                    throw new type_1.ErrorWithStatus({ message: "Brand is not exist", status: 404 });
                 return true;
             }
         }
@@ -132,7 +132,7 @@ exports.UpdateProductValidator = (0, express_validator_1.checkSchema)({
             options: async (value) => {
                 const isBrand = await database_services_1.default.brands.findOne({ _id: new mongodb_1.ObjectId(value) });
                 if (!isBrand)
-                    throw new type_1.ErrroWithStatus({ message: "Brand is not exist", status: 404 });
+                    throw new type_1.ErrorWithStatus({ message: "Brand is not exist", status: 404 });
                 return true;
             }
         }
@@ -150,7 +150,7 @@ exports.WishListValidator = (0, express_validator_1.checkSchema)({
             options: async (value) => {
                 const isProc = await database_services_1.default.products.findOne({ _id: new mongodb_1.ObjectId(value) });
                 if (!isProc)
-                    throw new type_1.ErrroWithStatus({ message: "Product is not exist", status: 404 });
+                    throw new type_1.ErrorWithStatus({ message: "Product is not exist", status: 404 });
             }
         }
     },
@@ -163,7 +163,7 @@ exports.RatingValidator = (0, express_validator_1.checkSchema)({
             options: async (value) => {
                 const isProc = await database_services_1.default.products.findOne({ _id: new mongodb_1.ObjectId(value) });
                 if (!isProc)
-                    throw new type_1.ErrroWithStatus({ message: "Product is not exist", status: 404 });
+                    throw new type_1.ErrorWithStatus({ message: "Product is not exist", status: 404 });
             }
         }
     },

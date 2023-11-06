@@ -44,6 +44,7 @@ export const updateProductController = async (req: Request, res: Response) => {
 export const deleteProductController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    console.log("🚀 ~ file: products.controller.ts:47 ~ deleteProductController ~ id:", id)
     await productServices.deleteProduct(id)
     return res.status(200).json({ message: "Delete Product successfully", status: 200 })
   } catch (error: any) {
@@ -56,6 +57,14 @@ export const getAllProductController = async (req: Request, res: Response) => {
 
     const queryObj = { ...req.query }
     const result = await productServices.getAllProducts(queryObj)
+    return res.status(200).json({ message: "Get Products successfully", status: 200, result })
+  } catch (error: any) {
+    return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: error.message || "Get Products failed", status: ErrorStatus.INTERNAL_SERVER, error })
+  }
+}
+export const getAllProductNoFilterController = async (req: Request, res: Response) => {
+  try {
+    const result = await productServices.getAllProductsNoFilter()
     return res.status(200).json({ message: "Get Products successfully", status: 200, result })
   } catch (error: any) {
     return res.json(ErrorStatus.INTERNAL_SERVER).json({ message: error.message || "Get Products failed", status: ErrorStatus.INTERNAL_SERVER, error })
@@ -87,13 +96,13 @@ export const uploadImageController = async (req: Request, res: Response) => {
     const { value } = await productServices.uploadImage(req)
     return res.status(200).json({ message: "Upload image successfully", status: 200, result: value })
   } catch (error: any) {
-    return res.json(ErrorStatus.INTERNAL_SERVER).json({ error: error.message ||"Upload image failed", status: ErrorStatus.INTERNAL_SERVER })
+    return res.json(ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Upload image failed", status: ErrorStatus.INTERNAL_SERVER })
   }
 }
 export const deleteImageController = async (req: Request, res: Response) => {
   const { id } = req.params
   try {
-    const uploader = cloudinaryDeleteImage(id);
+    cloudinaryDeleteImage(id);
     return res.json({ message: "Delete image successfully", status: 200 })
   } catch (error: any) {
     return res.json(ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Delete image failed", status: ErrorStatus.INTERNAL_SERVER })

@@ -56,6 +56,7 @@ export const deleteBlogController = async (req: Request, res: Response) => {
 export const likesBlogController = async (req: Request, res: Response) => {
   try {
     const { id_blog } = req.body
+    console.log("🚀 ~ file: blogs.controller.ts:59 ~ likesBlogController ~ id_blog:", id_blog)
     const { _id: user_id } = req.user
     const { value } = await blogServices.likesBlog(id_blog, user_id)
     return res.status(200).json({ message: "Likes Blog successfully", status: 200, result: value })

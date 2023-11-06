@@ -21,7 +21,7 @@ class ColorsServices {
             }
         }, { returnDocument: "after" });
         if (result.value === null)
-            throw new type_1.ErrroWithStatus({ message: "Colors does not exits!", status: 404 });
+            throw new type_1.ErrorWithStatus({ message: "Colors does not exits!", status: 404 });
         return result;
     }
     async deleteColors(id) {

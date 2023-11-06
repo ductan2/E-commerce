@@ -1,7 +1,7 @@
 import Coupons, { CouponType } from "~/models/coupons.models";
 import databaseServices from "./database.services";
 import { ObjectId } from "mongodb";
-import { ErrroWithStatus } from "~/constants/type";
+import { ErrorWithStatus } from "~/constants/type";
 
 class CouponsServices {
   async createCoupon(payload: CouponType) {
@@ -17,7 +17,7 @@ class CouponsServices {
   }
   async updateCoupon(id: string, payload: CouponType) {
     const result = await databaseServices.coupons.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { ...payload, updated_at: new Date() } }, { returnDocument: "after" })
-    if (result.value === null) throw new ErrroWithStatus({ message: "BlogCategory does not exits!", status: 404 })
+    if (result.value === null) throw new ErrorWithStatus({ message: "BlogCategory does not exits!", status: 404 })
     return result
   }
   async deleteCoupon(id: string) {

@@ -29,13 +29,13 @@ class UserServices {
     async loginAdmin(email, password) {
         const admin = await database_services_1.default.users.findOne({ email });
         if (!admin) {
-            throw new type_1.ErrroWithStatus({ message: "Email not found!", status: enum_1.ErrorStatus.NOT_FOUND });
+            throw new type_1.ErrorWithStatus({ message: "Email not found!", status: enum_1.ErrorStatus.NOT_FOUND });
         }
         if (admin?.role !== "admin")
-            throw new type_1.ErrroWithStatus({ message: "You do not have permission to access!", status: enum_1.ErrorStatus.FORBIDDEN });
+            throw new type_1.ErrorWithStatus({ message: "You do not have permission to access!", status: enum_1.ErrorStatus.FORBIDDEN });
         const isPassword = (0, bcrypt_1.checkPassword)(password, admin.password);
         if (!isPassword) {
-            throw new type_1.ErrroWithStatus({ message: "Password is incoret!", status: enum_1.ErrorStatus.UNAUTHORIZED });
+            throw new type_1.ErrorWithStatus({ message: "Password is incoret!", status: enum_1.ErrorStatus.UNAUTHORIZED });
         }
         const refresh_token = (0, jwt_2.generatorRefreshToken)(admin._id.toString());
         await database_services_1.default.users.updateOne({ _id: admin._id }, { $set: { refresh_token } });
@@ -49,11 +49,11 @@ class UserServices {
     async login(email, password) {
         const user = await database_services_1.default.users.findOne({ email });
         if (!user) {
-            throw new type_1.ErrroWithStatus({ message: "User not found!", status: enum_1.ErrorStatus.NOT_FOUND });
+            throw new type_1.ErrorWithStatus({ message: "User not found!", status: enum_1.ErrorStatus.NOT_FOUND });
         }
         const isPassword = (0, bcrypt_1.checkPassword)(password, user.password);
         if (!isPassword) {
-            throw new type_1.ErrroWithStatus({ message: "Password is incoret!", status: enum_1.ErrorStatus.UNAUTHORIZED });
+            throw new type_1.ErrorWithStatus({ message: "Password is incoret!", status: enum_1.ErrorStatus.UNAUTHORIZED });
         }
         const refresh_token = (0, jwt_2.generatorRefreshToken)(user._id.toString());
         await database_services_1.default.users.updateOne({ _id: user._id }, { $set: { refresh_token } });

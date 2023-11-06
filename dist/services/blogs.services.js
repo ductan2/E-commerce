@@ -28,7 +28,7 @@ class BlogServices {
         let getBlog;
         const blogUpdateResult = await database_services_1.default.blogs.findOneAndUpdate({ _id: new mongodb_1.ObjectId(id) }, { $inc: { views: 1 } });
         if (!blogUpdateResult.value) {
-            throw new type_1.ErrroWithStatus({ message: "Blog not found", status: 404 });
+            throw new type_1.ErrorWithStatus({ message: "Blog not found", status: 404 });
         }
         const blog = blogUpdateResult.value;
         const userLikePromises = blog.likes.map(async (userId) => {
@@ -84,13 +84,13 @@ class BlogServices {
             }
         }, { returnDocument: "after" });
         if (result.value === null)
-            throw new type_1.ErrroWithStatus({ message: "Blog not found", status: 404 });
+            throw new type_1.ErrorWithStatus({ message: "Blog not found", status: 404 });
         return result;
     }
     async deleteBlog(id) {
         const { deletedCount } = await database_services_1.default.blogs.deleteOne({ _id: new mongodb_1.ObjectId(id) });
         if (deletedCount === 0)
-            throw new type_1.ErrroWithStatus({ message: "Blog not found", status: 404 });
+            throw new type_1.ErrorWithStatus({ message: "Blog not found", status: 404 });
         return deletedCount;
     }
     async likesBlog(id_blog, user_id) {

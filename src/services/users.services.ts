@@ -1,8 +1,8 @@
 import { ObjectId, WithId } from "mongodb";
-import { ErrroWithStatus, ProductOrder, RegisterRequestBody, UpdateInfo } from "~/constants/type";
+import { ErrorWithStatus, ProductOrder, RegisterRequestBody, UpdateInfo } from "~/constants/type";
 import databaseServices from "./database.services";
 import { checkPassword, hassPassword } from "~/utils/bcrypt";
-import User, { UserType } from "~/models/users.models";
+import User, { Address, UserType } from "~/models/users.models";
 import { generatorToken } from "~/utils/jwt";
 import { ErrorStatus, statusOrder } from "~/constants/enum";
 import { generatorRefreshToken } from "~/utils/jwt"
@@ -24,12 +24,12 @@ class UserServices {
   async loginAdmin(email: string, password: string) {
     const admin = await databaseServices.users.findOne({ email })
     if (!admin) {
-      throw new ErrroWithStatus({ message: "Email not found!", status: ErrorStatus.NOT_FOUND })
+      throw new ErrorWithStatus({ message: "Email not found!", status: ErrorStatus.NOT_FOUND })
     }
-    if (admin?.role !== "admin") throw new ErrroWithStatus({ message: "You do not have permission to access!", status: ErrorStatus.FORBIDDEN })
+    if (admin?.role !== "admin") throw new ErrorWithStatus({ message: "You do not have permission to access!", status: ErrorStatus.FORBIDDEN })
     const isPassword = checkPassword(password, admin.password)
     if (!isPassword) {
-      throw new ErrroWithStatus({ message: "Password is incoret!", status: ErrorStatus.UNAUTHORIZED })
+      throw new ErrorWithStatus({ message: "Password is incoret!", status: ErrorStatus.UNAUTHORIZED })
     }
     const refresh_token = generatorRefreshToken(admin._id.toString())
     await databaseServices.users.updateOne({ _id: admin._id }, { $set: { refresh_token } })
@@ -43,11 +43,11 @@ class UserServices {
   async login(email: string, password: string) {
     const user = await databaseServices.users.findOne({ email })
     if (!user) {
-      throw new ErrroWithStatus({ message: "User not found!", status: ErrorStatus.NOT_FOUND })
+      throw new ErrorWithStatus({ message: "User not found!", status: ErrorStatus.NOT_FOUND, path: "email" })
     }
     const isPassword = checkPassword(password, user.password)
     if (!isPassword) {
-      throw new ErrroWithStatus({ message: "Password is incoret!", status: ErrorStatus.UNAUTHORIZED })
+      throw new ErrorWithStatus({ message: "Password is incoret!", status: ErrorStatus.BAD_REQUEST, path: "password" })
     }
     const refresh_token = generatorRefreshToken(user._id.toString())
     await databaseServices.users.updateOne({ _id: user._id }, { $set: { refresh_token } })
@@ -70,29 +70,36 @@ class UserServices {
   }
   async resetPassword(token: string, password: string) {
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-    const user = await databaseServices.users.findOne({ password_reset_token: hashedToken, password_reset_expires: { $gt: new Date() } })
+    const user = await databaseServices.users.findOne({
+      password_reset_token: hashedToken,
+      password_reset_expires: { $gt: new Date() }
+    })
     if (!user) throw new Error("Token is invalid or has expired")
     return await databaseServices.users.updateOne({ _id: user._id }, { $set: { password: hassPassword(password), password_reset_token: "", password_reset_expires: undefined, updated_at: new Date() } })
   }
-  async logout(refresh_token: string) {
-    console.log("🚀 ~ file: users.services.ts:78 ~ UserServices ~ logout ~ refresh_token:", refresh_token)
-    if (!refresh_token) throw new Error("Refresh token not found!")
-    return databaseServices.users.findOneAndUpdate({ refresh_token }, { $set: { refresh_token: "" } })
+  async logout(id: string) {
+    if (!id) throw new Error("User not found!")
+    return databaseServices.users.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { refresh_token: "" } })
   }
-  async getAllUser(): Promise<UserType[]> {
+  async getAllUser() {
     return databaseServices.users.find({}, {
       projection: { password: 0, password_reset_expires: 0, password_reset_token: 0, refresh_token: 0 }
     }).toArray()
   }
-  async getUserById(user_id: string): Promise<UserType | null> {
+  async getUserById(user_id: string) {
     return databaseServices.users.findOne({ _id: new ObjectId(user_id) })
   }
   async updateUserById(user_id: ObjectId, payload: UpdateInfo) {
-    const isCheck = await this.getUserById(user_id.toString());
-    if (!isCheck) {
+    const user = await this.getUserById(user_id.toString());
+    if (!user) {
       throw new Error("User not found!")
     }
-    return databaseServices.users.findOneAndUpdate({ _id: user_id }, { $set: { ...payload, updated_at: new Date() } }, { returnDocument: "after" })
+    const arrayAddress = user.address
+    if (payload.address) {
+      payload.address = { ...payload.address, id: crypto.randomBytes(8).toString("hex") }
+      arrayAddress?.push(payload.address)
+    }
+    return databaseServices.users.findOneAndUpdate({ _id: user_id }, { $set: { ...payload, address: arrayAddress, updated_at: new Date() } }, { returnDocument: "after" })
   }
   async deleteUserById(user_id: string) {
     const isCheck = await this.getUserById(user_id);
@@ -154,7 +161,8 @@ class UserServices {
   async addCartByUserId(user_id: string, cart: any) {
     const user = await this.getUserById(user_id);
     if (!user) throw new Error("User not found!");
-
+    const address = cart[0].address;
+    console.log("🚀 ~ file: users.services.ts:157 ~ UserServices ~ addCartByUserId ~ address:", address)
     for (let item of cart) {
       const proc = await databaseServices.products.findOne({
         _id: new ObjectId(item._id),
@@ -168,6 +176,7 @@ class UserServices {
       const colorProc = item.color;
       const totalProc = item.count * proc.price!;
       const amountProc = item.count;
+
       const isExits = await databaseServices.carts.findOne({ orderby: user_id, product: proc._id, color: new ObjectId(colorProc) })
       if (!isExits) {
         // Cart doesn't exits products and color
@@ -177,7 +186,7 @@ class UserServices {
           amount: amountProc,
           color: new ObjectId(colorProc),
           totalAfterDiscount: 0,
-          orderby: user_id
+          orderby: user_id,
         }));
       }
       else {
@@ -299,7 +308,7 @@ class UserServices {
   //   return order;
   // }
 
-  async createOrder(user_id: string, COD: boolean, couponApplied?: string, payment_id?: string) {
+  async createOrder(user_id: string, COD: boolean, couponApplied?: string, payment_id?: string, address?: Address) {
 
     if (!COD && !payment_id) {
       throw new Error("Create cash order failed!");
@@ -337,6 +346,7 @@ class UserServices {
         color: item.color,
         count: quantityToSubtract,
         price: item.cartTotal,
+
       });
 
       updatePromises.push({
@@ -362,6 +372,7 @@ class UserServices {
       order_status: statusOrder.CASH_ON_DELIVERY,
       payment_id: payment_id,
       orderby: new ObjectId(user_id),
+      address: address as Address
     });
     await databaseServices.carts.deleteMany({ orderby: user_id });
     await databaseServices.order.insertOne(order);
@@ -371,13 +382,31 @@ class UserServices {
   }
 
   async getOrder(user_id: string, order_id: string) {
-    return await databaseServices.order.findOne({ orderby: new ObjectId(user_id), _id: new ObjectId(order_id) })
+    const orders = await databaseServices.order.findOne({ orderby: new ObjectId(user_id), _id: new ObjectId(order_id) })
+    if (!orders) throw new Error("Order not found!")
+    const updatedProducts = await Promise.all(orders.products.map(async (item) => {
+      const product = await databaseServices.products.findOne({ _id: new ObjectId(item.product as string) });
+      const color = await databaseServices.colors.findOne({ _id: new ObjectId(item.color) })
+      return {
+        ...item,
+        product: product,
+        color: color?.title
+      };
+    }));
+
+    return {
+      ...orders,
+      products: updatedProducts
+    };
   }
   async updateCartQuantity(amount: number, user_id: string, cart_id: string) {
     const cart = await databaseServices.carts.findOne({ orderby: user_id, _id: new ObjectId(cart_id) })
     if (!cart) throw new Error("Cart not found!")
     const proc = await databaseServices.products.findOne({ _id: cart.product })
     if (!proc) throw new Error("Product not found!")
+    if (amount < 1 && amount > proc.quantity!) {
+      throw new Error("Amount is invalid")
+    }
     return await databaseServices.carts.updateOne({ orderby: user_id, _id: new ObjectId(cart_id) }, { $set: { amount, cartTotal: amount * proc.price! } })
   }
   async deleteCart(user_id: string, cart_id: string) {
@@ -401,6 +430,35 @@ class UserServices {
   }
   async getInfoByToken(id: string) {
     return await databaseServices.users.findOne({ _id: new ObjectId(id) })
+  }
+  async updateAddressUser(id_address: string, id_user: string, body: Address) {
+
+    console.log("🚀 ~ file: users.services.ts:420 ~ UserServices ~ updateAddressUser ~ body:", body)
+    const user = await databaseServices.users.findOne({
+      _id: new ObjectId(id_user),
+    })
+    if (!user) throw new Error("User not found!")
+
+    const address = user.address?.find((item) => item.id === id_address)
+    if (!address) throw new Error("Address not found!")
+    const newAddress = { ...address, ...body }
+    const index = user.address?.findIndex((item) => item.id === id_address)
+    console.log("🚀 ~ file: users.services.ts:429 ~ UserServices ~ updateAddressUser ~ index:", index)
+    user.address?.splice(index!, 1, newAddress)
+    console.log(user.address)
+    return await databaseServices.users.findOneAndUpdate({ _id: new ObjectId(id_user) }, { $set: { address: user.address } }, { returnDocument: "after" })
+  }
+  async deleteAddressUser(id_user: string, id_address: string) {
+    const user = await databaseServices.users.findOne({ _id: new ObjectId(id_user) })
+
+    if (!user) throw new Error("User not found!");
+    if (!user.address || user.address.length === 0) {
+      throw new Error("You don't have an address yet")
+    }
+    const address = user.address?.find((item) => item.id === id_address)
+    if (!address) throw new Error("Address not found!");
+    const newAddress = user.address.filter((item) => item.id !== id_address)
+    return await databaseServices.users.findOneAndUpdate({ _id: new ObjectId(id_user) }, { $set: { address: newAddress } }, { returnDocument: "after" })
   }
 }
 export const userServices = new UserServices()

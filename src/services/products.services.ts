@@ -10,7 +10,7 @@ import sharp from 'sharp';
 import { File } from 'formidable';
 import { UPLOAD_IMAGE_PRODUCT_DIR, UPLOAD_IMAGE_PRODUCT_TEMP_DIR } from "~/constants/dir";
 import { Request } from "express";
-import { cloudinaryUploadImage } from "~/utils/cloudinary";
+import { cloudinaryDeleteImage, cloudinaryUploadImage } from "~/utils/cloudinary";
 import { ProductQuery } from "~/constants/type";
 import { ProductAggregation } from "~/models/aggregation.models";
 class ProductServices {
@@ -82,7 +82,18 @@ class ProductServices {
       data: result,
     };
   }
-
+  async getAllProductsNoFilter() {
+    const aggregation = new ProductAggregation();
+    const result = await aggregation
+      .lookupColor()
+      .addColorField()
+      .lookupCategory()
+      .addCategoryField()
+      .addBrandInfo()
+      .sortObject({ created_at: -1 })
+      .execute(databaseServices.products);
+    return result;
+  }
   async updateProduct(id: string, payload: ProductType) {
     const product = await databaseServices.products.findOne({ _id: new ObjectId(id) })
     if (payload.brand) {
@@ -101,6 +112,18 @@ class ProductServices {
     }, { returnDocument: "after" })
   }
   async deleteProduct(id: string) {
+    const product = await databaseServices.products.findOne({ _id: new ObjectId(id) })
+    if (!product) throw new Error("Product not found")
+    await databaseServices.brands.updateOne({ _id: new ObjectId(product.brand as string) }, {
+      $inc: {
+        quantity: -1
+      }
+    })
+    if (product.images && product.images.length > 0) {
+      await Promise.all(product.images.map(async item => {
+        await cloudinaryDeleteImage(item.public_id);
+      }));
+    }
     await databaseServices.products.deleteOne({ _id: new ObjectId(id) })
   }
   async addToWishList(product_id: string, user: User) {
@@ -177,8 +200,6 @@ class ProductServices {
     }, { returnDocument: "after" })
   }
   async getAllOrders(search: string) {
-
-    //6511672d1109dcb621f83d44
     const piper = [
       {
         $match: {

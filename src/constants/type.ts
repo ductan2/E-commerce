@@ -1,6 +1,7 @@
 import { ObjectId, WithId } from "mongodb";
 import { type } from "os";
 import { ProductType } from "~/models/products.models";
+import { Address } from "~/models/users.models";
 
 export type EmailData = {
   to: string;
@@ -48,6 +49,7 @@ export interface LoginRequestBody {
 export interface ErrorType {
   message: string;
   status: number;
+  path?: string
 }
 export interface UpdateReqeustBody {
   firstname: string;
@@ -58,7 +60,8 @@ export interface UpdateInfo {
   firstname: string;
   lastname: string
   mobile: string
-  address: string
+  address: Address
+  avatar: UploadImageType
 }
 
 export interface RatingType {
@@ -71,11 +74,13 @@ export interface imageUrl {
   url: string
 }
 // CLASS
-export class ErrroWithStatus {
+export class ErrorWithStatus {
   message: string
   status: number
-  constructor({ message, status }: ErrorType) {
+  path?: string
+  constructor({ message, status, path }: ErrorType) {
     this.message = message
     this.status = status
+    this.path = path
   }
 }

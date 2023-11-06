@@ -2,7 +2,7 @@
 import { ColorType, Colors } from "~/models/colors.models";
 import databaseServices from "./database.services";
 import { ObjectId } from "mongodb";
-import { ErrroWithStatus } from "~/constants/type";
+import { ErrorWithStatus } from "~/constants/type";
 
 
 class ColorsServices {
@@ -17,7 +17,7 @@ class ColorsServices {
         ...payload, updated_at: new Date()
       }
     }, { returnDocument: "after" })
-    if (result.value === null) throw new ErrroWithStatus({ message: "Colors does not exits!", status: 404 })
+    if (result.value === null) throw new ErrorWithStatus({ message: "Colors does not exits!", status: 404 })
     return result
   }
   async deleteColors(id: string) {

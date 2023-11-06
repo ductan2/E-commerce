@@ -23,9 +23,8 @@ export const loginController: RequestHandler<{}, {}, LoginRequestBody> = async (
     const result = await userServices.login(email, password)
     res.cookie('refresh_token', result.refresh_token, { httpOnly: true, maxAge: 60 * 1000 }) // 3 days = 72 * 60 * 60 * 1000
     return res.status(200).json({ message: "Login successfully", status: 200, result })
-
   } catch (error: any) {
-    return res.status(ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Login failed", status: ErrorStatus.INTERNAL_SERVER })
+    return res.status(ErrorStatus.INTERNAL_SERVER).json([{ error: error.message || "Login failed", status: ErrorStatus.INTERNAL_SERVER, path: error.path }])
   }
 }
 
@@ -45,7 +44,7 @@ export const getInfoTokenController = async (req: Request, res: Response) => {
     const { _id } = req.user
     const result = await userServices.getInfoByToken(_id)
     return res.status(200).json({ message: "Get info token successfully", status: 200, result })
-  } catch (error:any) {
+  } catch (error: any) {
     return res.status(ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Login failed", status: error.status || ErrorStatus.INTERNAL_SERVER })
   }
 }
@@ -53,7 +52,8 @@ export const forgotPasswordTokenController: RequestHandler = async (req, res) =>
   try {
     const { email } = req.body
     const token = await userServices.forgotPasswordToken(email)
-    const resetUrl = `Hi ${email}, please click this link to reset your password: <a href="http://localhost:${process.env.PORT}/api/users/reset-password/${token}">Reset password</a>`
+    const resetUrl = `Hi ${email}, please click this link to reset your password:
+     <a href="${process.env.HOST_FRONTEND}/${token}">Reset password</a>`
     const data: EmailData = {
       to: email,
       text: `Hey ${email}`,
@@ -121,6 +121,8 @@ export const applyCouponController = async (req: Request, res: Response) => {
 
 export const updateUserController = async (req: Request, res: Response) => {
   const { _id } = req.user
+  console.log("🚀 ~ file: users.controller.ts:123 ~ updateUserController ~ _id:", _id)
+  console.log(req.body)
   try {
     const { value } = await userServices.updateUserById(_id, req.body)
     return res.status(200).json({ message: "Update user successfully", status: 200, result: value })
@@ -182,9 +184,8 @@ export const updatePasswordController = async (req: Request, res: Response) => {
 }
 export const logoutController: RequestHandler = async (req, res) => {
   try {
-    const cookie = req.cookies;
-    console.log("🚀 ~ file: users.controller.ts:177 ~ constlogoutController:RequestHandler= ~ cookie:", cookie.refresh_token)
-    await userServices.logout(cookie.refresh_token);
+    const { _id } = (req as Request).user
+    await userServices.logout(_id)
     res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: true
@@ -212,6 +213,32 @@ export const userAddCartController = async (req: Request, res: Response) => {
     return res.status(ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get cart failed", status: ErrorStatus.BAD_REQUEST })
   }
 }
+
+export const updateAddressUserController = async (req: Request, res: Response) => {
+  try {
+    const { id_address } = req.params;
+    const { _id } = req.user;
+    const { address } = req.body;
+
+    const { value } = await userServices.updateAddressUser(id_address, _id, address[0])
+    return res.status(200).json({ message: "Update address successfully", status: 200, result: value })
+  } catch (error: any) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ error: error.message || "Update address user failed", status: ErrorStatus.BAD_REQUEST })
+  }
+}
+
+export const deleteAddressUserController = async (req: Request, res: Response) => {
+  try {
+    const { _id } = req.user;
+    const { id_address } = req.params;
+    const { value } = await userServices.deleteAddressUser(_id, id_address);
+    return res.status(200).json({ message: "Delete address successfully", status: 200, result: value })
+  } catch (error: any) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ error: error.message || "Delete address user failed", status: ErrorStatus.BAD_REQUEST })
+
+  }
+}
+
 export const getUserCartController = async (req: Request, res: Response) => {
   try {
     const { _id } = req.user;
@@ -232,10 +259,10 @@ export const deleteCartController = async (req: Request, res: Response) => {
   }
 }
 export const createOrderController = async (req: Request, res: Response) => {
-  const { COD, couponApplied, payment_id } = req.body
+  const { COD, couponApplied, payment_id, address } = req.body
   try {
     const { _id } = req.user;
-    const result = await userServices.createOrder(_id, COD, couponApplied, payment_id)
+    const result = await userServices.createOrder(_id, COD, couponApplied, payment_id, address)
     return res.status(200).json({ message: "Create order successfully", status: 200, result })
   } catch (error: any) {
     return res.status(ErrorStatus.BAD_REQUEST).json({ error: error.message || "Create order failed", status: ErrorStatus.BAD_REQUEST })

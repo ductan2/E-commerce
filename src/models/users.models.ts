@@ -1,8 +1,15 @@
 import { ObjectId } from "mongodb"
 import crypto from "crypto"
+import { UploadImageType } from "~/constants/type"
 enum Role {
   USER = "user",
   ADMIN = "admin"
+}
+export type Address = {
+  id?: string
+  province?: string
+  district?: string
+  warđs?: string
 }
 export interface UserType {
   _id?: ObjectId;
@@ -12,11 +19,11 @@ export interface UserType {
   mobile: string;
   password: string;
   role?: Role
-  address?: string;
+  address?: Address[];
   blocked?: boolean
   cart?: any[]
   wishlist?: string[] // href of product
-  avatar?: string
+  avatar?: UploadImageType | string
   refresh_token?: string
   password_reset_token?: string
   password_reset_expires?: Date
@@ -33,10 +40,10 @@ export default class User {
   mobile: string;
   password: string;
   role: Role;
-  address?: string;
+  address?: Address[];
   blocked?: boolean
   wishlist?: string[]
-  avatar?: string
+  avatar?: UploadImageType | string
   refresh_token?: string
   password_reset_token?: string
   password_reset_expires?: Date
@@ -54,7 +61,9 @@ export default class User {
     this.role = user.role || Role.USER
     this.avatar = user.avatar || "https://anubis.gr/wp-content/uploads/2018/03/no-avatar.png"
     this.blocked = user.blocked || false
-    this.address = user.address || ""
+    this.address = user.address?.map((item) => {
+      return { ...item, id: crypto.randomBytes(32).toString("hex") }
+    }) || []
     this.refresh_token = user.refresh_token || ""
     this.password_reset_token = user.password_reset_token || ""
     this.wishlist = user.wishlist || []

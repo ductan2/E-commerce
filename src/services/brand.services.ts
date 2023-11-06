@@ -2,7 +2,7 @@
 import Brands, { BrandType } from "~/models/brand.models";
 import databaseServices from "./database.services";
 import { ObjectId } from "mongodb";
-import { ErrroWithStatus } from "~/constants/type";
+import { ErrorWithStatus } from "~/constants/type";
 import { Request } from "express";
 import { getFileName, handleuploadImage } from "~/utils/file";
 import { UPLOAD_IMAGE_BRAND_DIR, UPLOAD_IMAGE_BRAND_TEMP_DIR } from "~/constants/dir";
@@ -26,7 +26,7 @@ class BrandsServices {
         ...payload, updated_at: new Date()
       }
     }, { returnDocument: "after" })
-    if (result.value === null) throw new ErrroWithStatus({ message: "Brand does not exits!", status: 404 })
+    if (result.value === null) throw new ErrorWithStatus({ message: "Brand does not exits!", status: 404 })
     return result
   }
   async uploadImage(req: Request) {

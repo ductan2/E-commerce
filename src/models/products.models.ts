@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb"
-import { RatingType, imageUrl } from "~/constants/type"
+import { RatingType, UploadImageType, imageUrl } from "~/constants/type"
 
 
 
@@ -15,7 +15,7 @@ export interface ProductType {
   sold?: number
   trending?: boolean
   featured?: boolean
-  images?: any[]
+  images?: UploadImageType[]
   color?: ObjectId[]
   ratings?: RatingType[]
   rating_distribution?: number
@@ -34,7 +34,7 @@ export default class Products {
   trending?: boolean
   featured?: boolean
   sold?: number
-  images?: any[]
+  images?: UploadImageType[]
   color?: ObjectId[]
   ratings?: RatingType[]
   rating_distribution?: number

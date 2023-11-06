@@ -7,8 +7,8 @@ const passwordSchema: ParamSchema = {
   notEmpty: true,
   isLength: {
     options: {
-      min: 6,
-      max: 25,
+      min: 8,
+      max: 50,
     }
   },
   isStrongPassword: {
@@ -26,8 +26,8 @@ const confirmPasswordSchema: ParamSchema = {
   notEmpty: true,
   isLength: {
     options: {
-      min: 6,
-      max: 25,
+      min: 8,
+      max: 50,
     }
   },
   custom: {

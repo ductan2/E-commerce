@@ -23,7 +23,7 @@ class CouponsServices {
     async updateCoupon(id, payload) {
         const result = await database_services_1.default.coupons.findOneAndUpdate({ _id: new mongodb_1.ObjectId(id) }, { $set: { ...payload, updated_at: new Date() } }, { returnDocument: "after" });
         if (result.value === null)
-            throw new type_1.ErrroWithStatus({ message: "BlogCategory does not exits!", status: 404 });
+            throw new type_1.ErrorWithStatus({ message: "BlogCategory does not exits!", status: 404 });
         return result;
     }
     async deleteCoupon(id) {

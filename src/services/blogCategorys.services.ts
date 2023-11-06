@@ -1,7 +1,7 @@
 
 import databaseServices from "./database.services";
 import { ObjectId } from "mongodb";
-import { ErrroWithStatus } from "~/constants/type";
+import { ErrorWithStatus } from "~/constants/type";
 import BlogCategorys, { BlogCategpryType } from "~/models/blogCategorys.models";
 
 
@@ -17,7 +17,7 @@ class BlogCategorysServices {
         ...payload, updated_at: new Date()
       }
     }, { returnDocument: "after" })
-    if (result.value === null) throw new ErrroWithStatus({ message: "BlogCategory does not exits!", status: 404 })
+    if (result.value === null) throw new ErrorWithStatus({ message: "BlogCategory does not exits!", status: 404 })
     return result
   }
   async deleteBlogCategory(id: string) {

@@ -8,6 +8,9 @@ export const authMiddlewares = async (req: Request, res: Response, next: NextFun
     token = req.headers.authorization.split(" ")[1]
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
+      const expNow = Date.now() / 1000;
+      const { exp } = decoded as JwtPayload;
+      if (Number(exp) < expNow) return res.status(401).json({ message: "Token has expired", status: 401 })
       const { id } = decoded as JwtPayload
       const user = await databaseServices.users.findOne({ _id: new ObjectId(id) })
       req.user = user
