@@ -33,6 +33,10 @@ export const contactSchema = checkSchema({
     notEmpty: true,
     trim: true,
   },
+  subject: {
+    notEmpty: true,
+    trim: true,
+  },
   status: {
     optional: true,
     trim: true,
@@ -66,6 +70,10 @@ export const updateContactSchema = checkSchema({
     trim: true,
   },
   message: {
+    optional: true,
+    trim: true,
+  },
+  subject: {
     optional: true,
     trim: true,
   },

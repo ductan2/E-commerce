@@ -40,6 +40,17 @@ class ProductServices {
             .addCategoryField()
             .addBrandInfo()
             .execute(database_services_1.default.products);
+        const comments = result[0].ratings;
+        const userPostPromises = comments.map((item) => {
+            return database_services_1.default.users.findOne({ _id: new mongodb_1.ObjectId(item.postedBy) }, { projection: { password: 0, refresh_token: 0, role: 0 } });
+        });
+        const userPosts = await Promise.all(userPostPromises);
+        result[0].ratings = result[0].ratings.map((item, index) => {
+            return {
+                ...item,
+                postedBy: userPosts[index],
+            };
+        });
         return result;
     }
     async getColors(colors) {
@@ -60,7 +71,7 @@ class ProductServices {
             .lookupCategory()
             .addCategoryField()
             .addBrandInfo()
-            .sortObject(queryObj.sort ? { [queryObj.sort]: queryObj.sort === 'desc' ? -1 : 1 } : { created_at: 1 })
+            .sortObject(queryObj.sort || { created_at: -1 })
             .skip(queryObj.page && queryObj.page > 0 ? (queryObj.page - 1) * (queryObj.limit || 10) : 0)
             .limit(queryObj.limit ? Number(queryObj.limit) : 10)
             .execute(database_services_1.default.products);
@@ -69,6 +80,18 @@ class ProductServices {
             total: totalItem.total,
             data: result,
         };
+    }
+    async getAllProductsNoFilter() {
+        const aggregation = new aggregation_models_1.ProductAggregation();
+        const result = await aggregation
+            .lookupColor()
+            .addColorField()
+            .lookupCategory()
+            .addCategoryField()
+            .addBrandInfo()
+            .sortObject({ created_at: -1 })
+            .execute(database_services_1.default.products);
+        return result;
     }
     async updateProduct(id, payload) {
         const product = await database_services_1.default.products.findOne({ _id: new mongodb_1.ObjectId(id) });
@@ -88,6 +111,19 @@ class ProductServices {
         }, { returnDocument: "after" });
     }
     async deleteProduct(id) {
+        const product = await database_services_1.default.products.findOne({ _id: new mongodb_1.ObjectId(id) });
+        if (!product)
+            throw new Error("Product not found");
+        await database_services_1.default.brands.updateOne({ _id: new mongodb_1.ObjectId(product.brand) }, {
+            $inc: {
+                quantity: -1
+            }
+        });
+        if (product.images && product.images.length > 0) {
+            await Promise.all(product.images.map(async (item) => {
+                await (0, cloudinary_1.cloudinaryDeleteImage)(item.public_id);
+            }));
+        }
         await database_services_1.default.products.deleteOne({ _id: new mongodb_1.ObjectId(id) });
     }
     async addToWishList(product_id, user) {
@@ -112,9 +148,9 @@ class ProductServices {
         const existingRating = product?.ratings?.find((item) => item.postedBy.toString() === user_id.toString());
         if (existingRating) {
             await database_services_1.default.products.findOneAndUpdate({
-                ratings: { $elemMatch: existingRating } // $elemMatch: Matches documents that contain an array field with at least one element that matches all the specified query criteria.
+                ratings: { $elemMatch: existingRating }
             }, {
-                $set: { "ratings.$.star": star, "ratings.$.comment": comment } // $ is the first position of the element in the array that matches the query condition.
+                $set: { "ratings.$.star": star, "ratings.$.comment": comment, "ratings.$.posted_at": new Date() }
             }, { returnDocument: "after" });
         }
         else {
@@ -123,6 +159,7 @@ class ProductServices {
                     ratings: {
                         star,
                         comment,
+                        posted_at: new Date(),
                         postedBy: user_id
                     }
                 }
@@ -134,7 +171,7 @@ class ProductServices {
         const sumRating = productAllRating?.ratings?.reduce((prev, item) => prev + item.star, 0);
         return await database_services_1.default.products.findOneAndUpdate({ _id: new mongodb_1.ObjectId(product_id) }, {
             $set: {
-                rating_distribution: Math.round(Number(sumRating) / Number(lengthRatingProc))
+                rating_distribution: (Number(sumRating) / Number(lengthRatingProc))
             }
         });
     }
@@ -157,7 +194,6 @@ class ProductServices {
         }, { returnDocument: "after" });
     }
     async getAllOrders(search) {
-        //6511672d1109dcb621f83d44
         const piper = [
             {
                 $match: {}
@@ -243,7 +279,7 @@ class ProductServices {
                     $and: [
                         queryObj.title ? { title: { $regex: new RegExp(queryObj.title, 'i') } } : {},
                         queryObj.brand ? { brand: brandId } : {},
-                        { price: { $gte: queryObj.minPrice || 0, $lte: queryObj.maxPrice || Number.MAX_VALUE } },
+                        { price: { $gte: Number(queryObj.minPrice) || 0, $lte: Number(queryObj.maxPrice) || Number.MAX_VALUE } },
                     ],
                 },
             },

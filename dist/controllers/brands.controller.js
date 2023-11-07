@@ -11,7 +11,7 @@ const createBrandController = async (req, res) => {
         return res.status(200).json({ message: "Create Brand successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Create Brand failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Create Brand failed", status: 400 });
     }
 };
 exports.createBrandController = createBrandController;
@@ -22,7 +22,7 @@ const uploadImageBrandController = async (req, res) => {
         return res.status(200).json({ message: "Upload image successfully", status: 200, result: value });
     }
     catch (error) {
-        return res.json(enum_1.ErrorStatus.INTERNAL_SERVER).json({ message: "Upload image failed", status: enum_1.ErrorStatus.INTERNAL_SERVER });
+        return res.json(enum_1.ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Upload image failed", status: enum_1.ErrorStatus.INTERNAL_SERVER });
     }
 };
 exports.uploadImageBrandController = uploadImageBrandController;
@@ -34,7 +34,7 @@ const updateBrandController = async (req, res) => {
         return res.status(200).json({ message: "Update Brand successfully", status: 200, result: value });
     }
     catch (error) {
-        return res.status(error.status || 400).json({ message: error.message || "Update Color failed", status: error.status || 400 });
+        return res.status(error.status || 400).json({ error: error.message || "Update Color failed", status: error.status || 400 });
     }
 };
 exports.updateBrandController = updateBrandController;
@@ -45,7 +45,7 @@ const deleteBrandController = async (req, res) => {
         return res.status(200).json({ message: "Delete Brand successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Delete Brand failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Delete Brand failed", status: 400 });
     }
 };
 exports.deleteBrandController = deleteBrandController;
@@ -56,7 +56,7 @@ const getBrandController = async (req, res) => {
         return res.status(200).json({ message: "Get brand successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Get Brand failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Get Brand failed", status: 400 });
     }
 };
 exports.getBrandController = getBrandController;
@@ -66,7 +66,7 @@ const getAllBrandController = async (req, res) => {
         return res.status(200).json({ message: "Get all brand successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Get all Brand failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Get all Brand failed", status: 400 });
     }
 };
 exports.getAllBrandController = getAllBrandController;

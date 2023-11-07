@@ -12,7 +12,7 @@ const createBlogController = async (req, res) => {
         return res.status(200).json({ message: "Create Blog successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: error.message || "Create Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Create Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.createBlogController = createBlogController;
@@ -22,7 +22,7 @@ const getBlogController = async (req, res) => {
         return res.status(200).json({ message: "Get Blog successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(error.status || enum_1.ErrorStatus.BAD_REQUEST).json({ message: error.message || "Get Blog failed", status: error.status || enum_1.ErrorStatus.NOT_FOUND });
+        return res.status(error.status || enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get Blog failed", status: error.status || enum_1.ErrorStatus.NOT_FOUND });
     }
 };
 exports.getBlogController = getBlogController;
@@ -33,7 +33,7 @@ const getAllBlogsController = async (req, res) => {
         return res.status(200).json({ message: "Get All Blogs successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: error.message || "Get All Blogs failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get All Blogs failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.getAllBlogsController = getAllBlogsController;
@@ -43,7 +43,7 @@ const updateBlogController = async (req, res) => {
         return res.status(200).json({ message: "Update Blog successfully", status: 200, result: value });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: error.message || "Update Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Update Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.updateBlogController = updateBlogController;
@@ -54,19 +54,20 @@ const deleteBlogController = async (req, res) => {
         return res.status(200).json({ message: "Delete Blog successfully", status: 200 });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: error.message || "Delete Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Delete Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.deleteBlogController = deleteBlogController;
 const likesBlogController = async (req, res) => {
     try {
         const { id_blog } = req.body;
+        console.log("🚀 ~ file: blogs.controller.ts:59 ~ likesBlogController ~ id_blog:", id_blog);
         const { _id: user_id } = req.user;
         const { value } = await blogs_services_1.blogServices.likesBlog(id_blog, user_id);
         return res.status(200).json({ message: "Likes Blog successfully", status: 200, result: value });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: error.message || "Likes Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Likes Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.likesBlogController = likesBlogController;
@@ -78,7 +79,7 @@ const disLikesBlogController = async (req, res) => {
         return res.status(200).json({ message: "Dislike Blog successfully", status: 200, result: value });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: error.message || "Dislike Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Dislike Blog failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.disLikesBlogController = disLikesBlogController;
@@ -89,7 +90,7 @@ const uploadImageController = async (req, res) => {
         return res.status(200).json({ message: "Upload image successfully", status: 200, result: value });
     }
     catch (error) {
-        return res.json(enum_1.ErrorStatus.INTERNAL_SERVER).json({ message: "Upload image failed", status: enum_1.ErrorStatus.INTERNAL_SERVER });
+        return res.json(enum_1.ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Upload image failed", status: enum_1.ErrorStatus.INTERNAL_SERVER });
     }
 };
 exports.uploadImageController = uploadImageController;
@@ -100,7 +101,7 @@ const deleteImageController = async (req, res) => {
         return res.json({ message: "Delete image successfully", status: 200 });
     }
     catch (error) {
-        return res.json(enum_1.ErrorStatus.INTERNAL_SERVER).json({ message: "Delete image failed", status: enum_1.ErrorStatus.INTERNAL_SERVER });
+        return res.json(enum_1.ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Delete image failed", status: enum_1.ErrorStatus.INTERNAL_SERVER });
     }
 };
 exports.deleteImageController = deleteImageController;

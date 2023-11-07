@@ -12,20 +12,22 @@ const authMiddlewares = async (req, res, next) => {
     if (req?.headers?.authorization && req.headers.authorization.startsWith("Bearer")) {
         token = req.headers.authorization.split(" ")[1];
         try {
-            if (token) {
-                const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
-                const { id } = decoded;
-                const user = await database_services_1.default.users.findOne({ _id: new mongodb_1.ObjectId(id) });
-                req.user = user;
-                next();
-            }
+            const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+            const expNow = Date.now() / 1000;
+            const { exp } = decoded;
+            if (Number(exp) < expNow)
+                return res.status(401).json({ message: "Token has expired", status: 401 });
+            const { id } = decoded;
+            const user = await database_services_1.default.users.findOne({ _id: new mongodb_1.ObjectId(id) });
+            req.user = user;
+            next();
         }
         catch (error) {
-            next(error);
+            return res.status(401).json({ message: "Token is invalid", status: 401 });
         }
     }
     else {
-        return next(new Error("Token not found"));
+        return res.status(401).json({ message: "Token is invalid", status: 401 });
     }
 };
 exports.authMiddlewares = authMiddlewares;

@@ -8,7 +8,7 @@ const createColorsController = async (req, res) => {
         return res.status(200).json({ message: "Create Colors successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Create Colors failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Create Colors failed", status: 400 });
     }
 };
 exports.createColorsController = createColorsController;
@@ -19,7 +19,7 @@ const updateColorsController = async (req, res) => {
         return res.status(200).json({ message: "Update Colors successfully", status: 200, result: value });
     }
     catch (error) {
-        return res.status(error.status || 400).json({ message: error.message || "Update Color failed", status: error.status || 400 });
+        return res.status(error.status || 400).json({ error: error.message || "Update Color failed", status: error.status || 400 });
     }
 };
 exports.updateColorsController = updateColorsController;
@@ -30,7 +30,7 @@ const deleteColorsController = async (req, res) => {
         return res.status(200).json({ message: "Delete Colors successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Delete Colors failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Delete Colors failed", status: 400 });
     }
 };
 exports.deleteColorsController = deleteColorsController;
@@ -41,7 +41,7 @@ const getColorsController = async (req, res) => {
         return res.status(200).json({ message: "Get a color successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Get Colors failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Get Colors failed", status: 400 });
     }
 };
 exports.getColorsController = getColorsController;
@@ -51,7 +51,7 @@ const getAllColorsController = async (req, res) => {
         return res.status(200).json({ message: "Get all Colors successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Get all Colors failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Get all Colors failed", status: 400 });
     }
 };
 exports.getAllColorsController = getAllColorsController;

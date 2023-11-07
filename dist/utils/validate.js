@@ -14,7 +14,7 @@ const validate = (validation) => {
         const simplifiedErrors = [];
         for (const key in arrayError) {
             simplifiedErrors.push({
-                message: arrayError[key].msg.message || arrayError[key].msg,
+                error: arrayError[key].msg.message || arrayError[key].msg,
                 path: arrayError[key].path,
                 status: arrayError[key].msg.status || 400
             });

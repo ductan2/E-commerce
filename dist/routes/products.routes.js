@@ -13,13 +13,14 @@ const router = express_1.default.Router();
 router.get('/get-all-orders', auth_middlewares_1.authMiddlewares, auth_middlewares_1.isAdmin, products_controller_1.getAllOrdersController);
 router.put('/upload/:id', auth_middlewares_1.authMiddlewares, auth_middlewares_1.isAdmin, products_controller_1.uploadImageController);
 router.delete('/delete-image/:id', auth_middlewares_1.authMiddlewares, auth_middlewares_1.isAdmin, products_controller_1.deleteImageController);
-router.post('/', (0, validate_1.validate)(products_middlewares_1.ProductsValidator), products_controller_1.createProductController);
+router.post('/', auth_middlewares_1.authMiddlewares, auth_middlewares_1.isAdmin, (0, validate_1.validate)(products_middlewares_1.ProductsValidator), products_controller_1.createProductController);
 router.get("/get-all-products", products_controller_1.getAllProductController);
+router.get("/get-all-products-no-filter", products_controller_1.getAllProductNoFilterController);
 router.get('/count', products_controller_1.getCountProductsController);
-router.get('/:id', products_controller_1.getProductController);
-router.patch('/:id', (0, validate_1.validate)(products_middlewares_1.UpdateProductValidator), (0, filter_middlewares_1.filterMiddleware)(["brand", "category", "color", "trending", "featured",
-    "price", "description", "images", "quantity", "ratings", "slug", "sold", "title"]), products_controller_1.updateProductController);
-router.delete('/:id', products_controller_1.deleteProductController);
 router.put('/add-to-wishlist', auth_middlewares_1.authMiddlewares, (0, validate_1.validate)(products_middlewares_1.WishListValidator), products_controller_1.addToWishListController);
 router.put('/rating', auth_middlewares_1.authMiddlewares, (0, validate_1.validate)(products_middlewares_1.RatingValidator), products_controller_1.ratingController);
+router.get('/:id', products_controller_1.getProductController);
+router.patch('/:id', auth_middlewares_1.authMiddlewares, auth_middlewares_1.isAdmin, (0, validate_1.validate)(products_middlewares_1.UpdateProductValidator), (0, filter_middlewares_1.filterMiddleware)(["brand", "category", "color", "trending", "featured",
+    "price", "description", "images", "quantity", "ratings", "slug", "sold", "title", "rating_distribution"]), products_controller_1.updateProductController);
+router.delete('/:id', auth_middlewares_1.authMiddlewares, auth_middlewares_1.isAdmin, products_controller_1.deleteProductController);
 exports.default = router;

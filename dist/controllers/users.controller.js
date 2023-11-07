@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderStatusController = exports.getOrderController = exports.createOrderController = exports.getUserCartController = exports.userAddCartController = exports.getWhishListController = exports.logoutController = exports.updatePasswordController = exports.refreshTokenController = exports.unBlockUserController = exports.blockUserController = exports.deleteUserController = exports.updateUserController = exports.applyCouponController = exports.getEmptyCartController = exports.getUserController = exports.getAllUserController = exports.resetPasswordController = exports.forgotPasswordTokenController = exports.loginAdminController = exports.loginController = exports.registerController = void 0;
+exports.updateOrderStatusController = exports.updateCartQuantityController = exports.getOrderController = exports.getOrderByUserController = exports.createOrderController = exports.deleteCartController = exports.getUserCartController = exports.deleteAddressUserController = exports.updateAddressUserController = exports.userAddCartController = exports.getWishListController = exports.logoutController = exports.updatePasswordController = exports.refreshTokenController = exports.unBlockUserController = exports.blockUserController = exports.deleteUserController = exports.updateUserController = exports.applyCouponController = exports.getEmptyCartController = exports.getUserController = exports.getAllUserController = exports.resetPasswordController = exports.forgotPasswordTokenController = exports.getInfoTokenController = exports.loginAdminController = exports.loginController = exports.registerController = void 0;
 const enum_1 = require("../constants/enum");
 const users_services_1 = require("../services/users.services");
 const email_controller_1 = require("./email.controller");
@@ -13,7 +13,7 @@ const registerController = async (req, res) => {
         return res.status(201).json({ message: "Register successfully", status: 201 });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.INTERNAL_SERVER).json({ message: "Register failed", status: enum_1.ErrorStatus.INTERNAL_SERVER, error });
+        return res.status(enum_1.ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Register failed", status: enum_1.ErrorStatus.INTERNAL_SERVER });
     }
 };
 exports.registerController = registerController;
@@ -25,7 +25,7 @@ const loginController = async (req, res) => {
         return res.status(200).json({ message: "Login successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.INTERNAL_SERVER).json({ message: "Login failed", status: enum_1.ErrorStatus.INTERNAL_SERVER, error: error.message });
+        return res.status(enum_1.ErrorStatus.INTERNAL_SERVER).json([{ error: error.message || "Login failed", status: enum_1.ErrorStatus.INTERNAL_SERVER, path: error.path }]);
     }
 };
 exports.loginController = loginController;
@@ -37,15 +37,27 @@ const loginAdminController = async (req, res) => {
         return res.status(200).json({ message: "Login successfully", status: 200, result: { ...result.data, token: result.token } });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.INTERNAL_SERVER).json({ message: error.message || "Login failed", status: error.status || enum_1.ErrorStatus.INTERNAL_SERVER });
+        return res.status(enum_1.ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Login failed", status: error.status || enum_1.ErrorStatus.INTERNAL_SERVER });
     }
 };
 exports.loginAdminController = loginAdminController;
+const getInfoTokenController = async (req, res) => {
+    try {
+        const { _id } = req.user;
+        const result = await users_services_1.userServices.getInfoByToken(_id);
+        return res.status(200).json({ message: "Get info token successfully", status: 200, result });
+    }
+    catch (error) {
+        return res.status(enum_1.ErrorStatus.INTERNAL_SERVER).json({ error: error.message || "Login failed", status: error.status || enum_1.ErrorStatus.INTERNAL_SERVER });
+    }
+};
+exports.getInfoTokenController = getInfoTokenController;
 const forgotPasswordTokenController = async (req, res) => {
     try {
         const { email } = req.body;
         const token = await users_services_1.userServices.forgotPasswordToken(email);
-        const resetUrl = `Hi ${email}, please click this link to reset your password: <a href="http://localhost:${process.env.PORT}/api/users/reset-password/${token}">Reset password</a>`;
+        const resetUrl = `Hi ${email}, please click this link to reset your password:
+     <a href="${process.env.HOST_FRONTEND}/${token}">Reset password</a>`;
         const data = {
             to: email,
             text: `Hey ${email}`,
@@ -56,7 +68,7 @@ const forgotPasswordTokenController = async (req, res) => {
         return res.status(200).json({ message: "Send forgot password token successfully", status: 200, token });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Send forgot password token failed", status: enum_1.ErrorStatus.BAD_REQUEST, error: error.message });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Send forgot password token failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.forgotPasswordTokenController = forgotPasswordTokenController;
@@ -68,7 +80,7 @@ const resetPasswordController = async (req, res) => {
         return res.status(200).json({ message: "Reset password successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Reset password failed", status: enum_1.ErrorStatus.BAD_REQUEST, error });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Reset password failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.resetPasswordController = resetPasswordController;
@@ -78,7 +90,7 @@ const getAllUserController = async (req, res) => {
         return res.status(200).json({ message: "Get user successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.FORBIDDEN).json({ message: "Get user failed", status: enum_1.ErrorStatus.FORBIDDEN, error });
+        return res.status(enum_1.ErrorStatus.FORBIDDEN).json({ error: error.message || "Get user failed", status: enum_1.ErrorStatus.FORBIDDEN });
     }
 };
 exports.getAllUserController = getAllUserController;
@@ -92,7 +104,7 @@ const getUserController = async (req, res) => {
         return res.status(200).json({ message: "Get user successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.FORBIDDEN).json({ message: "Get user failed", status: enum_1.ErrorStatus.FORBIDDEN, error });
+        return res.status(enum_1.ErrorStatus.FORBIDDEN).json({ error: error.message || "Get user failed", status: enum_1.ErrorStatus.FORBIDDEN });
     }
 };
 exports.getUserController = getUserController;
@@ -103,7 +115,7 @@ const getEmptyCartController = async (req, res) => {
         return res.status(200).json({ message: "Empty cart successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Empty cart failed", status: enum_1.ErrorStatus.BAD_REQUEST, error });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Empty cart failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.getEmptyCartController = getEmptyCartController;
@@ -115,12 +127,14 @@ const applyCouponController = async (req, res) => {
         return res.status(200).json({ message: "Apply coupon successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: error.message || "Apply coupon failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Apply coupon failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.applyCouponController = applyCouponController;
 const updateUserController = async (req, res) => {
     const { _id } = req.user;
+    console.log("🚀 ~ file: users.controller.ts:123 ~ updateUserController ~ _id:", _id);
+    console.log(req.body);
     try {
         const { value } = await users_services_1.userServices.updateUserById(_id, req.body);
         return res.status(200).json({ message: "Update user successfully", status: 200, result: value });
@@ -173,7 +187,7 @@ const refreshTokenController = async (req, res) => {
         return res.status(200).json({ message: "Refresh token successfully", status: 200, access_token: result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Refresh token failed", status: enum_1.ErrorStatus.BAD_REQUEST, error: error.message });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Refresh token failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.refreshTokenController = refreshTokenController;
@@ -185,36 +199,35 @@ const updatePasswordController = async (req, res) => {
         return res.status(200).json({ message: "Update password successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Update password failed", status: enum_1.ErrorStatus.BAD_REQUEST, error: error.message });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Update password failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.updatePasswordController = updatePasswordController;
 const logoutController = async (req, res) => {
     try {
-        const cookie = req.cookies;
-        await users_services_1.userServices.logout(cookie.refresh_token);
+        const { _id } = req.user;
+        await users_services_1.userServices.logout(_id);
         res.clearCookie("refresh_token", {
             httpOnly: true,
             secure: true
         });
-        console.log("Logout successfully");
         return res.sendStatus(204);
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.FORBIDDEN).json({ message: "Logout failed", status: enum_1.ErrorStatus.FORBIDDEN });
+        return res.status(enum_1.ErrorStatus.FORBIDDEN).json({ error: error.message || "Logout failed", status: enum_1.ErrorStatus.FORBIDDEN });
     }
 };
 exports.logoutController = logoutController;
-const getWhishListController = async (req, res) => {
+const getWishListController = async (req, res) => {
     try {
         const result = await users_services_1.userServices.getWishList(req.user.email);
         return res.status(200).json({ message: "Get wishlist successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Get wishlist failed", status: enum_1.ErrorStatus.BAD_REQUEST, error: error.message });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get wishlist failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
-exports.getWhishListController = getWhishListController;
+exports.getWishListController = getWishListController;
 const userAddCartController = async (req, res) => {
     try {
         const { cart } = req.body;
@@ -223,10 +236,35 @@ const userAddCartController = async (req, res) => {
         return res.status(200).json({ message: "Get cart successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Get cart failed", status: enum_1.ErrorStatus.BAD_REQUEST, error: error.message });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get cart failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.userAddCartController = userAddCartController;
+const updateAddressUserController = async (req, res) => {
+    try {
+        const { id_address } = req.params;
+        const { _id } = req.user;
+        const { address } = req.body;
+        const { value } = await users_services_1.userServices.updateAddressUser(id_address, _id, address[0]);
+        return res.status(200).json({ message: "Update address successfully", status: 200, result: value });
+    }
+    catch (error) {
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Update address user failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+    }
+};
+exports.updateAddressUserController = updateAddressUserController;
+const deleteAddressUserController = async (req, res) => {
+    try {
+        const { _id } = req.user;
+        const { id_address } = req.params;
+        const { value } = await users_services_1.userServices.deleteAddressUser(_id, id_address);
+        return res.status(200).json({ message: "Delete address successfully", status: 200, result: value });
+    }
+    catch (error) {
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Delete address user failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+    }
+};
+exports.deleteAddressUserController = deleteAddressUserController;
 const getUserCartController = async (req, res) => {
     try {
         const { _id } = req.user;
@@ -234,33 +272,70 @@ const getUserCartController = async (req, res) => {
         return res.status(200).json({ message: "Get cart successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Get cart failed", status: enum_1.ErrorStatus.BAD_REQUEST, error });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get cart failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.getUserCartController = getUserCartController;
+const deleteCartController = async (req, res) => {
+    try {
+        const { _id: user_id } = req.user;
+        const { cart_id } = req.params;
+        const result = await users_services_1.userServices.deleteCart(user_id, cart_id);
+        return res.status(200).json({ message: "Get cart successfully", status: 200, result });
+    }
+    catch (error) {
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get cart failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+    }
+};
+exports.deleteCartController = deleteCartController;
 const createOrderController = async (req, res) => {
-    const { COD, couponApplied } = req.body;
+    const { COD, couponApplied, payment_id, address } = req.body;
     try {
         const { _id } = req.user;
-        const result = await users_services_1.userServices.createOrder(_id, COD, couponApplied);
+        const result = await users_services_1.userServices.createOrder(_id, COD, couponApplied, payment_id, address);
         return res.status(200).json({ message: "Create order successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Create order failed", status: enum_1.ErrorStatus.BAD_REQUEST, error });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Create order failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.createOrderController = createOrderController;
-const getOrderController = async (req, res) => {
+const getOrderByUserController = async (req, res) => {
     try {
         const { _id } = req.user;
-        const result = await users_services_1.userServices.getOrder(_id);
+        const result = await users_services_1.userServices.getOrderByUser(_id);
         return res.status(200).json({ message: "Get order successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ message: "Get order failed", status: enum_1.ErrorStatus.BAD_REQUEST, error });
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get order failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+    }
+};
+exports.getOrderByUserController = getOrderByUserController;
+const getOrderController = async (req, res) => {
+    try {
+        const { _id } = req.user;
+        const { order_id } = req.params;
+        const result = await users_services_1.userServices.getOrder(_id, order_id);
+        return res.status(200).json({ message: "Get order successfully", status: 200, result });
+    }
+    catch (error) {
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Get order failed", status: enum_1.ErrorStatus.BAD_REQUEST });
     }
 };
 exports.getOrderController = getOrderController;
+const updateCartQuantityController = async (req, res) => {
+    try {
+        const { cart_id } = req.params;
+        const { _id: user_id } = req.user;
+        const { amount } = req.body;
+        const result = await users_services_1.userServices.updateCartQuantity(amount, user_id, cart_id);
+        return res.status(200).json({ message: "Update cart successfully", status: 200, result });
+    }
+    catch (error) {
+        return res.status(enum_1.ErrorStatus.BAD_REQUEST).json({ error: error.message || "Update cart failed", status: enum_1.ErrorStatus.BAD_REQUEST });
+    }
+};
+exports.updateCartQuantityController = updateCartQuantityController;
 const updateOrderStatusController = async (req, res) => {
     try {
         const { cart_id } = req.params;

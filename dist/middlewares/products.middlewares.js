@@ -14,8 +14,8 @@ exports.ProductsValidator = (0, express_validator_1.checkSchema)({
         trim: true,
         isLength: {
             options: {
-                min: 2,
-                max: 50,
+                min: 1,
+                max: 100,
             },
             errorMessage: "Title must be at least 2 characters long and less than 25 characters long."
         },
@@ -25,8 +25,8 @@ exports.ProductsValidator = (0, express_validator_1.checkSchema)({
         trim: true,
         isLength: {
             options: {
-                min: 2,
-                max: 50,
+                min: 1,
+                max: 100,
             },
             errorMessage: "Slug must be at least 2 characters long and less than 25 characters long."
         },
@@ -37,7 +37,7 @@ exports.ProductsValidator = (0, express_validator_1.checkSchema)({
         isLength: {
             options: {
                 min: 2,
-                max: 500,
+                max: 10000,
             },
             errorMessage: "Description must be at least 2 characters long and less than 25 characters long."
         },
@@ -83,8 +83,8 @@ exports.UpdateProductValidator = (0, express_validator_1.checkSchema)({
         optional: true,
         isLength: {
             options: {
-                min: 2,
-                max: 50,
+                min: 1,
+                max: 100,
             },
             errorMessage: "Title must be at least 2 characters long and less than 25 characters long."
         },
@@ -94,8 +94,8 @@ exports.UpdateProductValidator = (0, express_validator_1.checkSchema)({
         optional: true,
         isLength: {
             options: {
-                min: 2,
-                max: 50,
+                min: 1,
+                max: 100,
             },
             errorMessage: "Slug must be at least 2 characters long and less than 25 characters long."
         },
@@ -105,8 +105,8 @@ exports.UpdateProductValidator = (0, express_validator_1.checkSchema)({
         optional: true,
         isLength: {
             options: {
-                min: 2,
-                max: 500,
+                min: 1,
+                max: 10000,
             },
             errorMessage: "Description must be at least 2 characters long and less than 25 characters long."
         },
@@ -117,14 +117,18 @@ exports.UpdateProductValidator = (0, express_validator_1.checkSchema)({
         errorMessage: "Price must be a number"
     },
     category: {
-        optional: true,
-        isLength: {
-            options: {
-                min: 2,
-                max: 50,
-            },
-            errorMessage: "Category must be at least 2 characters long and less than 25 characters long."
-        },
+        notEmpty: true,
+        isArray: true,
+        errorMessage: "Category must be an array objectId",
+        custom: {
+            options: async (value) => {
+                const ids = value.map((item) => new mongodb_1.ObjectId(item));
+                const isProc = await database_services_1.default.productCategorys.find({ _id: { $in: ids } }).toArray();
+                if (isProc.length !== value.length)
+                    throw new type_1.ErrorWithStatus({ message: "Category is not exist", status: 404 });
+                return true;
+            }
+        }
     },
     brand: {
         optional: true,
@@ -169,19 +173,10 @@ exports.RatingValidator = (0, express_validator_1.checkSchema)({
     },
     star: {
         notEmpty: true,
-        isNumeric: true,
-        errorMessage: "Star must be a number",
         isIn: { options: [[1, 2, 3, 4, 5]], errorMessage: "Star is invalid!" }
     },
     comment: {
         optional: true,
         trim: true,
-        isLength: {
-            options: {
-                min: 2,
-                max: 500,
-            },
-            errorMessage: "Comment must be at least 2 characters long and less than 500 characters long."
-        },
     }
 }, ["body"]);

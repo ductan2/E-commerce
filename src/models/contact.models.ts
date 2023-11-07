@@ -8,8 +8,9 @@ export interface contactType {
   name: string
   email: string
   phone: string
+  subject: string
   message: string
-  status:statusContact 
+  status: statusContact
   created_at: Date
   updated_at: Date
 }
@@ -19,7 +20,8 @@ export class Contact {
   email: string
   phone: string
   message: string
-  status:statusContact 
+  subject: string
+  status: statusContact
   created_at: Date
   updated_at: Date
   constructor(contact: contactType) {
@@ -28,6 +30,7 @@ export class Contact {
     this.name = contact.name
     this.email = contact.email
     this.phone = contact.phone
+    this.subject = contact.subject
     this.message = contact.message
     this.status = contact.status || statusContact.SUBMITTED
     this.created_at = contact.created_at || date

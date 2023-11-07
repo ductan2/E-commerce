@@ -9,7 +9,7 @@ const createCouponController = async (req, res) => {
         return res.status(200).json(result);
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Create coupon failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Create coupon failed", status: 400 });
     }
 };
 exports.createCouponController = createCouponController;
@@ -23,7 +23,7 @@ const getAllCouponsController = async (req, res) => {
         });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Get all coupons failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Get all coupons failed", status: 400 });
     }
 };
 exports.getAllCouponsController = getAllCouponsController;
@@ -38,7 +38,7 @@ const updateCouponController = async (req, res) => {
         });
     }
     catch (error) {
-        return res.status(error.status || 400).json({ message: error.message || "Update Color failed", status: error.status || 400 });
+        return res.status(error.status || 400).json({ error: error.message || "Update Color failed", status: error.status || 400 });
     }
 };
 exports.updateCouponController = updateCouponController;
@@ -53,7 +53,7 @@ const deleteCouponController = async (req, res) => {
         });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Delete coupon failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Delete coupon failed", status: 400 });
     }
 };
 exports.deleteCouponController = deleteCouponController;

@@ -13,8 +13,8 @@ const passwordSchema = {
     notEmpty: true,
     isLength: {
         options: {
-            min: 6,
-            max: 25,
+            min: 8,
+            max: 50,
         }
     },
     isStrongPassword: {
@@ -32,19 +32,9 @@ const confirmPasswordSchema = {
     notEmpty: true,
     isLength: {
         options: {
-            min: 6,
-            max: 25,
+            min: 8,
+            max: 50,
         }
-    },
-    isStrongPassword: {
-        options: {
-            minLength: 6,
-            minLowercase: 1,
-            minNumbers: 1,
-            minUppercase: 1,
-            minSymbols: 0
-        },
-        errorMessage: "Password must be at least 6 characters long and contain at least one lowercase letter, one uppercase letter, one digit."
     },
     custom: {
         options: ((value, { req }) => {

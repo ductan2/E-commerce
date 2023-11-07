@@ -21,7 +21,8 @@ exports.CouponsValidator = (0, express_validator_1.checkSchema)({
             options: async (value) => {
                 const nameCoupon = value.toUpperCase();
                 const isExist = await database_services_1.default.coupons.findOne({ name: nameCoupon });
-                if (isExist)
+                const now = new Date();
+                if (isExist?.name && isExist.expire_date <= now)
                     throw new Error("Coupon is exist");
             }
         }

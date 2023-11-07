@@ -22,7 +22,9 @@ class User {
         this.role = user.role || Role.USER;
         this.avatar = user.avatar || "https://anubis.gr/wp-content/uploads/2018/03/no-avatar.png";
         this.blocked = user.blocked || false;
-        this.address = user.address || "";
+        this.address = user.address?.map((item) => {
+            return { ...item, id: crypto_1.default.randomBytes(32).toString("hex") };
+        }) || [];
         this.refresh_token = user.refresh_token || "";
         this.password_reset_token = user.password_reset_token || "";
         this.wishlist = user.wishlist || [];

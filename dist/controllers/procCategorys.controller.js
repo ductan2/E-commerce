@@ -8,7 +8,7 @@ const createProcCategoryController = async (req, res) => {
         return res.status(200).json({ message: "Create ProcCategory successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Create ProcCategory failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Create ProcCategory failed", status: 400 });
     }
 };
 exports.createProcCategoryController = createProcCategoryController;
@@ -19,7 +19,7 @@ const updateProcCategoryController = async (req, res) => {
         return res.status(200).json({ message: "Update ProcCategory successfully", status: 200, result: value });
     }
     catch (error) {
-        return res.status(error.status || 400).json({ message: error.message || "Update Color failed", status: error.status || 400 });
+        return res.status(error.status || 400).json({ error: error.message || "Update Color failed", status: error.status || 400 });
     }
 };
 exports.updateProcCategoryController = updateProcCategoryController;
@@ -30,7 +30,7 @@ const deleteProcCategoryController = async (req, res) => {
         return res.status(200).json({ message: "Delete ProcCategory successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Delete ProcCategory failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Delete ProcCategory failed", status: 400 });
     }
 };
 exports.deleteProcCategoryController = deleteProcCategoryController;
@@ -41,7 +41,7 @@ const getProcCategoryController = async (req, res) => {
         return res.status(200).json(result);
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Get ProcCategory failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Get ProcCategory failed", status: 400 });
     }
 };
 exports.getProcCategoryController = getProcCategoryController;
@@ -51,7 +51,7 @@ const getAllProcCategoryController = async (req, res) => {
         return res.status(200).json({ message: "Get ProcCategory successfully", status: 200, result });
     }
     catch (error) {
-        return res.status(400).json({ message: error.message || "Get all ProcCategory failed", status: 400 });
+        return res.status(400).json({ error: error.message || "Get all ProcCategory failed", status: 400 });
     }
 };
 exports.getAllProcCategoryController = getAllProcCategoryController;

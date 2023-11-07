@@ -20,7 +20,6 @@ class ContactServices {
                 ...payload, updated_at: new Date()
             }
         }, { returnDocument: "after" });
-        console.log("🚀 ~ file: contact.services.ts:19 ~ ContactServices ~ updateContact ~ result:", result);
         if (result.value === null)
             throw new type_1.ErrorWithStatus({ message: "Contact does not exits!", status: 404 });
         return result;

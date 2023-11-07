@@ -12,11 +12,22 @@ class ProductAggregation {
                 $and: [
                     queryObj.title ? { title: { $regex: new RegExp(queryObj.title, 'i') } } : {},
                     queryObj.brand ? { brand: brandId } : {},
-                    { price: { $gte: queryObj.minPrice || 0, $lte: queryObj.maxPrice || Number.MAX_VALUE } },
+                    { price: { $gte: Number(queryObj.minPrice) || 0, $lte: Number(queryObj.maxPrice) || Number.MAX_VALUE } },
                 ],
             },
         };
         this.pipeline.push(matchStage);
+        return this;
+    }
+    getComment() {
+        this.pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'ratings.postedBy',
+                foreignField: '_id',
+                as: 'userComment'
+            }
+        });
         return this;
     }
     matchById(id) {
@@ -28,6 +39,17 @@ class ProductAggregation {
         return this;
     }
     sortObject(sortObj) {
+        const result = [sortObj].toString();
+        if (result.charAt(0) === '-') {
+            sortObj = {
+                [result.slice(1)]: -1
+            };
+        }
+        else {
+            sortObj = {
+                [result]: 1
+            };
+        }
         this.pipeline.push({
             $sort: sortObj
         });

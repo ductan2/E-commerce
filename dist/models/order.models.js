@@ -10,6 +10,8 @@ class Order {
         this.payment_intent = order.payment_intent || {};
         this.order_status = order.order_status || enum_1.statusOrder.CASH_ON_DELIVERY;
         this.orderby = order.orderby;
+        this.address = order.address;
+        this.payment_id = order.payment_id;
         this.created_at = order.created_at || new Date();
         this.updated_at = order.updated_at || new Date();
     }

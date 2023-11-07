@@ -39,7 +39,7 @@ router.delete("/:id", authMiddlewares,isAdmin,deleteColorsController)
 router.get("/get-all", getAllColorsController)
 
 router.get("/:id", getColorsController)
-
+  
 
 
 export default router;

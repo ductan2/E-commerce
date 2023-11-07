@@ -9,6 +9,7 @@ class Carts {
         this.cartTotal = cart.cartTotal || 0;
         this.amount = cart.amount || 0;
         this.color = cart.color;
+        this.coupon = cart.coupon;
         this.totalAfterDiscount = cart.totalAfterDiscount;
         this.orderby = cart.orderby || "";
         this.created_at = cart.created_at || new Date();
