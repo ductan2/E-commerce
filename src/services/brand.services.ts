@@ -42,7 +42,6 @@ class BrandsServices {
       })
       image = await cloudinaryUploadImage(newPath)
     }))
-    console.log(image);
     return await databaseServices.brands.findOneAndUpdate({ _id: new ObjectId(req.params.id) }, {
       $set: {
         images: image

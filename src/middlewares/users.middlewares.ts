@@ -79,7 +79,7 @@ export const RegisterValidator = checkSchema({
 
   },
   mobile: {
-    notEmpty: true,
+    optional: true,
     isMobilePhone: true,
     trim: true,
   },

@@ -37,7 +37,7 @@ export type UploadImageType = {
 export interface RegisterRequestBody {
   firstname: string;
   lastname: string;
-  mobile: string;
+  mobile?: string;
   email: string;
   password: string;
 }

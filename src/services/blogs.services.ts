@@ -35,7 +35,6 @@ class BlogServices {
 
     const blog = blogUpdateResult.value;
 
-    // Use $in operator to get categories, likes, and dislikes in parallel with fewer database calls
     const categoryIds = blog.category.map((item: any) => new ObjectId(item));
     const likeUserIds = blog.likes.map((userId) => new ObjectId(userId.toString()));
     const dislikeUserIds = blog.dislikes.map((userId) => new ObjectId(userId.toString()));

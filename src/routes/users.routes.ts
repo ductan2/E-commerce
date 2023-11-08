@@ -3,6 +3,7 @@ import { UpdateInfo } from "~/constants/type";
 import {
   applyCouponController,
   blockUserController, createOrderController, deleteAddressUserController, deleteUserController, forgotPasswordTokenController, getAllUserController, getEmptyCartController, getInfoTokenController, getOrderByUserController, getOrderController, getUserCartController, getUserController, getWishListController, loginAdminController, loginController, logoutController,
+  oauthController,
   refreshTokenController, registerController, resetPasswordController, unBlockUserController, updateAddressUserController, updateCartQuantityController, updateOrderStatusController, updatePasswordController, updateUserController, userAddCartController
 } from "~/controllers/users.controller";
 import { authMiddlewares, isAdmin } from "~/middlewares/auth.middlewares";
@@ -43,6 +44,8 @@ router.get('/wishlist', authMiddlewares, getWishListController)
 
 router.post('/cart', authMiddlewares, userAddCartController)
 
+router.get('/login-google',oauthController)
+
 router.patch("/apply-coupon", authMiddlewares, applyCouponController)
 
 router.put('/update-user-address/:id_address', authMiddlewares, filterMiddleware<UpdateInfo>(["address"]), updateAddressUserController)
@@ -58,6 +61,7 @@ router.post('/order/cash-order', authMiddlewares, createOrderController)
 router.get('/order/get-order', authMiddlewares, getOrderByUserController)
 
 router.get('/order/get-order/:order_id', authMiddlewares, getOrderController)
+
 
 
 router.put('/order/update-status-order/:cart_id', authMiddlewares, isAdmin, validate(StatusOrderValidator), updateOrderStatusController)

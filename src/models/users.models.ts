@@ -16,7 +16,7 @@ export interface UserType {
   firstname: string;
   lastname: string;
   email: string;
-  mobile: string;
+  mobile?: string;
   password: string;
   role?: Role
   address?: Address[];
@@ -37,7 +37,7 @@ export default class User {
   firstname: string;
   lastname: string;
   email: string;
-  mobile: string;
+  mobile?: string;
   password: string;
   role: Role;
   address?: Address[];
@@ -56,7 +56,7 @@ export default class User {
     this.firstname = user.firstname;
     this.lastname = user.lastname;
     this.email = user.email;
-    this.mobile = user.mobile;
+    this.mobile = user.mobile || "";
     this.password = user.password;
     this.role = user.role || Role.USER
     this.avatar = user.avatar || "https://anubis.gr/wp-content/uploads/2018/03/no-avatar.png"

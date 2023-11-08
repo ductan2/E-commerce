@@ -32,6 +32,13 @@ class DatabaseServices {
     } catch (err) {
       console.log("Connect failed");
     }
+
+  }
+  async indexUsers() {
+    const exits = await this.users.indexExists(["email_1"])
+    if (!exits) {
+      this.users.createIndex({ email: 1 }, { unique: true })
+    }
   }
   get users(): Collection<User> {
     return this.db.collection("users")

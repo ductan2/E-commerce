@@ -42,7 +42,7 @@ class ProductServices {
       .execute(databaseServices.products);
     const comments: [] = result[0].ratings;
     const userPostPromises = comments.map((item: any) => {
-      return databaseServices.users.findOne({ _id: new ObjectId(item.postedBy as string) }, { projection: { password: 0, refresh_token: 0, role: 0 } });
+      return databaseServices.users.findOne({ _id: new ObjectId(item.postedBy as string) }, { projection: { password: 0, password_reset_token: 0, password_reset_expires: 0, role: 0 } });
     });
 
     const userPosts = await Promise.all(userPostPromises);

@@ -8,10 +8,10 @@ import { ErrorStatus, statusOrder } from "~/constants/enum";
 import { generatorRefreshToken } from "~/utils/jwt"
 import jwt from "jsonwebtoken"
 import crypto from "crypto"
-import { CartType, Carts } from "~/models/carts.models";
+import { Carts } from "~/models/carts.models";
 import { Order, OrderType } from "~/models/order.models";
+import axios from "axios";
 import uniqid from 'uniqid';
-import Products, { ProductType } from "~/models/products.models";
 class UserServices {
   async register(payload: RegisterRequestBody) {
     const user_id = new ObjectId();
@@ -20,6 +20,7 @@ class UserServices {
       ...payload,
       password: hassPassword(payload.password)
     }))
+    return user_id;
   }
   async loginAdmin(email: string, password: string) {
     const admin = await databaseServices.users.findOne({ email })
@@ -87,7 +88,7 @@ class UserServices {
     }).toArray()
   }
   async getUserById(user_id: string) {
-    return databaseServices.users.findOne({ _id: new ObjectId(user_id) })
+    return databaseServices.users.findOne({ _id: new ObjectId(user_id) }, { projection: { password: 0, password_reset_token: 0, password_reset_expires: 0, role: 0 } })
   }
   async updateUserById(user_id: ObjectId, payload: UpdateInfo) {
     const user = await this.getUserById(user_id.toString());
@@ -158,6 +159,90 @@ class UserServices {
     return wishlistProducts
   }
 
+  async oauth(code: string) {
+    const { id_token, access_token } = await this.getOauthGoogleToken(code)
+    const userInfo = await this.getOauthInfoGoogle(access_token, id_token)
+    if (!userInfo.verified_email) {
+      throw new Error("Email is invalid!")
+    }
+
+    const user = await databaseServices.users.findOne({ email: userInfo.email })
+    if (user) {
+      const refresh_token = generatorRefreshToken(user._id.toString())
+      await databaseServices.users.updateOne({ _id: user._id }, { $set: { refresh_token } })
+
+      return {
+        token: generatorToken(user._id.toString()),
+        refresh_token
+      }
+    }
+    else {
+      const firstname = userInfo.name.split(' ').pop() || ""
+      const lastname = userInfo.name.split(' ').slice(0, -1).join(' ')
+      const password = Math.random().toString().substring(2, 15);
+      const body: RegisterRequestBody = {
+        email: userInfo.email,
+        firstname,
+        lastname,
+        password
+      }
+      const newUser_id = this.register(body)
+      const refresh_token = generatorRefreshToken(newUser_id.toString())
+      await databaseServices.users.updateOne({ _id: newUser_id }, {
+        $set: {
+          refresh_token,
+          avatar: { url: userInfo.picture, asset_id: "", public_id: "" }
+        }
+      })
+
+      return {
+        token: generatorToken(newUser_id.toString()),
+        refresh_token
+      }
+    }
+
+
+  }
+  private async getOauthInfoGoogle(access_token: string, id_token: string) {
+    const { data } = await
+      axios.get(`https://www.googleapis.com/oauth2/v1/userinfo`, {
+        params: {
+          access_token,
+          alt: "json"
+        },
+        headers: {
+          Authorization: `Bearer ${id_token}`
+        }
+      })
+    return data as {
+      id: string,
+      email: string,
+      name: string,
+      given_name: string,
+      family_name: string,
+      picture: string,
+      verified_email: boolean
+    }
+  }
+  private async getOauthGoogleToken(code: string) {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      grant_type: "authorization_code", // get access token
+      access_type: "offline" // get refresh token. if online -> not get refresh token
+    }
+    const { data } = await axios.post("https://oauth2.googleapis.com/token", body, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+    })
+    return data as {
+      id_token: string, access_token: string
+    };;
+
+  }
   async addCartByUserId(user_id: string, cart: any) {
     const user = await this.getUserById(user_id);
     if (!user) throw new Error("User not found!");
@@ -429,14 +514,15 @@ class UserServices {
     return await databaseServices.order.find({ orderby: new ObjectId(id) }).toArray()
   }
   async getInfoByToken(id: string) {
-    return await databaseServices.users.findOne({ _id: new ObjectId(id) })
+    return await databaseServices.users.findOne({ _id: new ObjectId(id) }, {
+      projection: { password: 0, password_reset_token: 0, password_reset_expires: 0, role: 0 }
+    })
   }
   async updateAddressUser(id_address: string, id_user: string, body: Address) {
 
-    console.log("🚀 ~ file: users.services.ts:420 ~ UserServices ~ updateAddressUser ~ body:", body)
     const user = await databaseServices.users.findOne({
       _id: new ObjectId(id_user),
-    })
+    }, { projection: { password: 0 } })
     if (!user) throw new Error("User not found!")
 
     const address = user.address?.find((item) => item.id === id_address)

@@ -21,7 +21,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/", router)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // app.use(cors)
-databaseServices.connect();
+databaseServices.connect().then(() => {
+  databaseServices.indexUsers()
+});
 app.listen(PORT, () => {
   console.log(`This is http://localhost:${PORT}`)
 })

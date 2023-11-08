@@ -1,0 +1,26 @@
+DB_USERNAME="user mongodb"
+DB_PASSWORD="password mongodb"
+DB_NAME="name mongodb"
+PORT=3000
+HOST="MY HOST"
+
+CLOUDINARY_CLOUD_NAME=""
+CLOUDINARY_API_KEY=""
+CLOUDINARY_API_SECRET=""
+
+JWT_SECRET=""
+JWT_EXPIRES_IN="1d"
+JWT_REFRESH_EXPIRES_IN="3d"
+
+EMAIL="example@gmail.com"
+PASSWORD=""
+
+PAYPAL_CLIENT_ID=""
+# use paypal sandbox or production for project ecommerce 
+HOST_FRONTEND=""
+
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+GOOGLE_REDIRECT_URI=""
+
+CLIENT_REDIRECT_CALLBACK=""

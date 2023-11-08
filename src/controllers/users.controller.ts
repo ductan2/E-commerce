@@ -214,6 +214,18 @@ export const userAddCartController = async (req: Request, res: Response) => {
   }
 }
 
+export const oauthController = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.query
+    const { token, refresh_token } = await userServices.oauth(code as string)
+    const urlRedirect = `${process.env.CLIENT_REDIRECT_CALLBACK}?access_token=${token}&refresh_token=${refresh_token}`
+    return res.redirect(urlRedirect)
+
+  } catch (error: any) {
+    return res.status(ErrorStatus.BAD_REQUEST).json({ error: error.message || "Login google failed", status: ErrorStatus.BAD_REQUEST })
+  }
+}
+
 export const updateAddressUserController = async (req: Request, res: Response) => {
   try {
     const { id_address } = req.params;
@@ -262,6 +274,7 @@ export const createOrderController = async (req: Request, res: Response) => {
   const { COD, couponApplied, payment_id, address } = req.body
   try {
     const { _id } = req.user;
+    console.log("🚀 ~ file: users.controller.ts:265 ~ createOrderController ~ _id:", _id)
     const result = await userServices.createOrder(_id, COD, couponApplied, payment_id, address)
     return res.status(200).json({ message: "Create order successfully", status: 200, result })
   } catch (error: any) {
