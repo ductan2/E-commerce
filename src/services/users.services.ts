@@ -161,10 +161,12 @@ class UserServices {
 
   async oauth(code: string) {
     const { id_token, access_token } = await this.getOauthGoogleToken(code)
+    console.log("🚀 ~ file: users.services.ts:164 ~ UserServices ~ oauth ~ id_token:", id_token)
     const userInfo = await this.getOauthInfoGoogle(access_token, id_token)
     if (!userInfo.verified_email) {
       throw new Error("Email is invalid!")
     }
+    console.log("🚀 ~ file: users.services.ts:165 ~ UserServices ~ oauth ~ userInfo:", userInfo)
 
     const user = await databaseServices.users.findOne({ email: userInfo.email })
     if (user) {
@@ -240,7 +242,7 @@ class UserServices {
     })
     return data as {
       id_token: string, access_token: string
-    };;
+    };
 
   }
   async addCartByUserId(user_id: string, cart: any) {

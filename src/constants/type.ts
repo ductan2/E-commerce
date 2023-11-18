@@ -62,6 +62,7 @@ export interface UpdateInfo {
   mobile: string
   address: Address
   avatar: UploadImageType
+  admin:string
 }
 
 export interface RatingType {

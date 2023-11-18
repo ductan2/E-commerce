@@ -38,13 +38,13 @@ router.post('/update-password', validate(UpdatePasswordValidator), authMiddlewar
 
 router.get("/get-all-user", authMiddlewares, isAdmin, getAllUserController)
 
-router.patch("/update-user", authMiddlewares, validate(UpdateValidator), filterMiddleware<UpdateInfo>(["firstname", "lastname", "address", "mobile", "avatar"]), updateUserController)
+router.patch("/update-user", authMiddlewares, validate(UpdateValidator), filterMiddleware<UpdateInfo>(["firstname", "lastname", "address", "mobile", "avatar", "admin"]), updateUserController)
 
 router.get('/wishlist', authMiddlewares, getWishListController)
 
 router.post('/cart', authMiddlewares, userAddCartController)
 
-router.get('/login-google',oauthController)
+router.get('/login-google', oauthController)
 
 router.patch("/apply-coupon", authMiddlewares, applyCouponController)
 
@@ -61,7 +61,6 @@ router.post('/order/cash-order', authMiddlewares, createOrderController)
 router.get('/order/get-order', authMiddlewares, getOrderByUserController)
 
 router.get('/order/get-order/:order_id', authMiddlewares, getOrderController)
-
 
 
 router.put('/order/update-status-order/:cart_id', authMiddlewares, isAdmin, validate(StatusOrderValidator), updateOrderStatusController)

@@ -41,10 +41,7 @@ export const handleuploadImage = async (req: Request, folderUpload: string) => {
     maxFields: 1,
     maxFileSize: 2 * 1024 * 1024,
     filter: ({ name, originalFilename, mimetype }: Part): boolean => {
-      console.log("🚀 ~ file: file.ts:55 ~ filter: ~ name", originalFilename)
       if (originalFilename === "") return false;
-      // check ext empty file and type file
-      console.log("🚀 ~ file: file.ts:55 ~ filter: ~ mimetype", mimetype)
 
       const valid = name === 'image' && Boolean(mimetype?.includes("image/"))
       if (!valid) {
@@ -56,7 +53,6 @@ export const handleuploadImage = async (req: Request, folderUpload: string) => {
   return new Promise(async (resolve, reject) => {
     try {
       form.parse(req, async (err, fields: Fields, files: Files) => {
-        console.log("🚀 ~ file: file.ts:55 ~ filter: ~ files", files)
         if (files === undefined || !files) return reject({
           message: "File is empty",
           status: 400,
